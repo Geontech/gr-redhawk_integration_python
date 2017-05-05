@@ -26,7 +26,7 @@ class redhawk_source(gr.sync_block):
     """
     docstring for block redhawk_source
     """
-    def __init__(self, corba_namespace_name):
+    def __init__(self, naming_context_ior, corba_namespace_name):
         gr.sync_block.__init__(self,
             name="redhawk_source",
             in_sig=None,

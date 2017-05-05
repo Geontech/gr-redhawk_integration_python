@@ -4,7 +4,7 @@
   <key>redhawk_integration_redhawk_sink</key>
   <category>[redhawk_integration]</category>
   <import>import redhawk_integration</import>
-  <make>redhawk_integration.redhawk_sink($ior_to_connect_to)</make>
+  <make>redhawk_integration.redhawk_sink($corba_namespace_name)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -12,7 +12,12 @@
        * type -->
   <param>
     <name>IOR to Connect To</name>
-    <key>ior_to_connect_to</key>
+    <key>naming_context_ior</key>
+    <type>string</type>
+  </param>
+  <param>
+    <name>CORBA Namespace Name</name>
+    <key>corba_namespace_name</key>
     <type>string</type>
   </param>
 

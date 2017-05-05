@@ -1,4 +1,0 @@
-/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/docs/doxygen/CMakeFiles/doxygen_target.dir
-/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/apps/CMakeFiles/pygen_apps_9a6dd.dir
-/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/python/CMakeFiles/pygen_python_38eba.dir
-/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/CMakeFiles/uninstall.dir

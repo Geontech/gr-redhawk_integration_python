@@ -11,6 +11,7 @@ from ProvidesShort_base import *
 
 class ProvidesShort_i(ProvidesShort_base):
     """<DESCRIPTION GOES HERE>"""
+
     def constructor(self):
         """
         This is called by the framework immediately after your component registers with the system.

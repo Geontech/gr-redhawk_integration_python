@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='UTF-8' standalone='no'?>
-<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.6.1">
-  <compounddef id="main" kind="page">
-    <compoundname>main</compoundname>
-    <title></title>
-    <detaileddescription>
-<para>Welcome to the GNU Radio TUTORIAL Block</para><para>This is the intro page for the Doxygen manual generated for the TUTORIAL block (docs/doxygen/other/main_page.dox). Edit it to add more detailed documentation about the new GNU Radio modules contained in this project. </para>    </detaileddescription>
-  </compounddef>
-</doxygen>
