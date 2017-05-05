@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.6.1">
+  <compounddef id="dir_2987b01ab02b982b02ff0a4386a3634d" kind="dir">
+    <compoundname>/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/include/</compoundname>
+    <innerdir refid="dir_a901f7ef205e3afc910f3aa528d8023a">/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/include/tutorial/</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/include/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,12 @@
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/_tutorial_swig.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/_tutorial_swig_doc_tag.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/_tutorial_swig_swig_tag.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/docs/doxygen/CMakeFiles/doxygen_target.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/lib/CMakeFiles/gnuradio-tutorial.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/apps/CMakeFiles/pygen_apps_9a6dd.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/python/CMakeFiles/pygen_python_54547.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/pygen_swig_36892.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/lib/CMakeFiles/test-tutorial.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/tutorial_swig_swig_2d0df.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/swig/CMakeFiles/tutorial_swig_swig_doc.dir
+/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/build/gr-tutorial/build/CMakeFiles/uninstall.dir

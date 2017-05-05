@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.6.1">
+  <compounddef id="dir_cd4d0348bcc7baf78100f71cb8c10178" kind="dir">
+    <compoundname>/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/include/redhawk_integration_python/</compoundname>
+    <innerfile refid="include_2redhawk__integration__python_2api_8h">include/redhawk_integration_python/api.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/drew/redhawk-gnuradio/gr-redhawk_integration_python/include/redhawk_integration_python/"/>
+  </compounddef>
+</doxygen>

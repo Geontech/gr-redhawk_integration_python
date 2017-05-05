@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<block>
+  <name>redhawk_sink</name>
+  <key>redhawk_integration_redhawk_sink</key>
+  <category>[redhawk_integration]</category>
+  <import>import redhawk_integration</import>
+  <make>redhawk_integration.redhawk_sink($ior_to_connect_to)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>IOR to Connect To</name>
+    <key>ior_to_connect_to</key>
+    <type>string</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type><!-- e.g. int, float, complex, byte, short, xxx_vector, ...--></type>
+  </sink>
+
+ </block>
