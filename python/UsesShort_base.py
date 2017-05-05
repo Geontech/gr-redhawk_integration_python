@@ -2,7 +2,7 @@
 #
 # AUTO-GENERATED CODE.  DO NOT MODIFY!
 #
-# Source: gr_redhawk_integration_python.spd.xml
+# Source: UsesShort.spd.xml
 from ossie.cf import CF
 from ossie.cf import CF__POA
 from ossie.utils import uuid
@@ -14,7 +14,7 @@ import Queue, copy, time, threading
 from ossie.resource import usesport, providesport
 import bulkio
 
-class gr_redhawk_integration_python_base(CF__POA.Resource, Component, ThreadedComponent):
+class UsesShort_base(CF__POA.Resource, Component, ThreadedComponent):
         # These values can be altered in the __init__ of your derived class
 
         PAUSE = 0.0125 # The amount of time to sleep if process return NOOP
@@ -31,8 +31,7 @@ class gr_redhawk_integration_python_base(CF__POA.Resource, Component, ThreadedCo
             # in future releases
             self.auto_start = False
             # Instantiate the default implementations for all ports on this component
-            self.port_dataShort_in = bulkio.InShortPort("dataShort_in", maxsize=self.DEFAULT_QUEUE_SIZE)
-            self.port_dataShort_out = bulkio.OutShortPort("dataShort_out")
+            self.port_data_short_out = bulkio.OutShortPort("data_short_out")
 
         def start(self):
             Component.start(self)
@@ -56,13 +55,9 @@ class gr_redhawk_integration_python_base(CF__POA.Resource, Component, ThreadedCo
         # DO NOT ADD NEW PORTS HERE.  You can add ports in your derived class, in the SCD xml file, 
         # or via the IDE.
 
-        port_dataShort_in = providesport(name="dataShort_in",
-                                         repid="IDL:BULKIO/dataShort:1.0",
-                                         type_="control")
-
-        port_dataShort_out = usesport(name="dataShort_out",
-                                      repid="IDL:BULKIO/dataShort:1.0",
-                                      type_="control")
+        port_data_short_out = usesport(name="data_short_out",
+                                       repid="IDL:BULKIO/dataShort:1.0",
+                                       type_="control")
 
         ######################################################################
         # PROPERTIES
