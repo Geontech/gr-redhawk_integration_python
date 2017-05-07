@@ -152,8 +152,18 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
             naming_context_ior="IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000030000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100",
             corba_namespace_name=None):
 
-        self.naming_context_ior = naming_context_ior
         self.orb = None
+
+        self.exec_params = {
+            "COMPONENT_IDENTIFIER": "sink_component_identifier",
+            "PROFILE_NAME": "sink_profile_name",
+            "NAME_BINDING": "sink_name_binding_5",
+            "NAMING_CONTEXT_IOR": naming_context_ior}
+
+        UsesShort_i.__init__(
+            self,
+            self.exec_params["COMPONENT_IDENTIFIER"],
+            self.exec_params)
 
         print "creating orb thread"
         orb_thread = threading.Thread(
@@ -191,12 +201,6 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
     def start_orb(self, thread_policy=None):
         nic = ""
 
-        execparams = {
-                "COMPONENT_IDENTIFIER": "sink_component_identifier",
-                "PROFILE_NAME": "sink_profile_name",
-                "NAME_BINDING": "sink_name_binding_4",
-                "NAMING_CONTEXT_IOR": self.naming_context_ior}
-
         self.orb = create_orb()
 
         component_poa = get_poa(
@@ -205,21 +209,23 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
                 name="component_poa")
 
         # Create the Resource
-        component_obj = UsesShort_i(
-                execparams["COMPONENT_IDENTIFIER"],
-                execparams)
+        #component_obj = UsesShort_i(
+        #        self.exec_params["COMPONENT_IDENTIFIER"],
+        #        self.exec_params)
+        component_obj = self
         # Activate the component servent
         component_poa.activate_object(component_obj)
         component_var = component_obj._this()
 
         component_obj.orb = self.orb
         component_obj.setAdditionalParameters(
-                softwareProfile=execparams["PROFILE_NAME"],
-                application_registrar_ior=self.naming_context_ior,
+                softwareProfile=self.exec_params["PROFILE_NAME"],
+                application_registrar_ior=self.exec_params["NAMING_CONTEXT_IOR"],
                 nic=nic)
 
         try:
-            binding_object = self.orb.string_to_object(self.naming_context_ior)
+            binding_object = self.orb.string_to_object(
+                    self.exec_params["NAMING_CONTEXT_IOR"])
         except:
             binding_object = None
         if not binding_object:
@@ -229,13 +235,13 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
         application_registrar = binding_object._narrow(
                 CF.ApplicationRegistrar)
         if not application_registrar:
-            name = URI.stringToName(execparams["NAME_BINDING"])
+            name = URI.stringToName(self.exec_params["NAME_BINDING"])
             rootContext = binding_object._narrow(
                     CosNaming.NamingContext)
             rootContext.rebind(name, component_var)
         else:
             application_registrar.registerComponent(
-                    execparams["NAME_BINDING"],
+                    self.exec_params["NAME_BINDING"],
                     component_var)
 
         logging.info("Starting ORB event loop")
