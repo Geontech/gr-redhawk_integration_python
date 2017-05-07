@@ -357,8 +357,9 @@ class Resource(object):
         self.__propertiesInitialized = False
 
     def setAdditionalParameters(self, softwareProfile, application_registrar_ior, nic):
+        print "calling my add"
+        orb = self.orb
         self._softwareProfile = softwareProfile
-        orb = __orb__
         try:
             obj = orb.string_to_object(application_registrar_ior)
             applicationRegistrar = obj._narrow(CF.ApplicationRegistrar)
