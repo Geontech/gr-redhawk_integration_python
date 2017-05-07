@@ -75,6 +75,7 @@ def create_orb():
         """
 
         orb = CORBA.ORB_init()
+        orb.shutdown()
         queue.put(orb)
 
     orb = callOmniorbpyWithTimeout(orbCreator, queue)

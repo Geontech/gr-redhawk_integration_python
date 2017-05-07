@@ -29,7 +29,9 @@ import signal
 
 
 import logging
-import copy, time, threading
+import time
+import threading
+import sys
 
 import CosNaming
 from ossie.cf import CF
@@ -63,7 +65,11 @@ def _poll_queue(queue, poll_period_seconds=0.001, timeout_seconds=1):
     return None
 
 
-def callOmniorbpyWithTimeout(method, queue, pollPeriodSeconds = 0.001, timeoutSeconds = 1):
+def call_omniorbpy_with_timeout(
+        method,
+        queue,
+        poll_period_seconds=.001,
+        timeout_seconds=1):
     """
     Some omniorbpy methods have been found to hang if the system runs out of 
     threads.  Call method and wait for up to timeoutSeconds.  If the method
@@ -81,8 +87,9 @@ def callOmniorbpyWithTimeout(method, queue, pollPeriodSeconds = 0.001, timeoutSe
         return None
 
     return _poll_queue(queue,
-                       poll_period_seconds= pollPeriodSeconds,
-                       timeout_seconds= timeoutSeconds)
+                       poll_period_seconds=poll_period_seconds,
+                       timeout_seconds=timeout_seconds)
+
 
 def create_orb():
     '''
@@ -95,7 +102,7 @@ def create_orb():
     # create a queue with one slot to hold the orb
     queue = Queue(maxsize=1) 
 
-    def orbCreator():
+    def orb_creator():
         """
         A method to pass to callOmniorbpyWithTimeout.
 
@@ -104,8 +111,8 @@ def create_orb():
         orb = CORBA.ORB_init()
         queue.put(orb)
 
-    orb = callOmniorbpyWithTimeout(orbCreator, queue)
-    if orb == None:
+    orb = call_omniorbpy_with_timeout(orb_creator, queue)
+    if not orb:
         logging.error("omniorbpy failed to return from ORB_init.  This is often a result of an insufficient amount of threads available on the system.")
         sys.exit(-1)
     return orb
@@ -146,6 +153,7 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
             corba_namespace_name=None):
 
         self.naming_context_ior = naming_context_ior
+        self.orb = None
 
         print "creating orb thread"
         orb_thread = threading.Thread(
@@ -155,13 +163,25 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
         orb_thread.start()
         print "done creating orb thread"
 
-        gr.sync_block.__init__(self,
-            name="redhawk_sink",
-            in_sig=[numpy.float],
-            out_sig=None)
+        gr.sync_block.__init__(
+                self,
+                name="redhawk_sink",
+                in_sig=[numpy.float],
+                out_sig=None)
 
         print "sleeping"
-        time.sleep(10)
+        time.sleep(5)
+        self.__del__()
+
+    def __del__(self):
+        print "Destructor called"
+        if self.orb:
+            try:
+                self.orb.shutdown(True)
+            except:
+                pass
+            self.orb.destroy()
+            print "done calling orb destroy"
 
     def work(self, input_items, output_items):
         in0 = input_items[0]
@@ -174,68 +194,52 @@ class redhawk_sink(gr.sync_block, UsesShort_i):
         execparams = {
                 "COMPONENT_IDENTIFIER": "sink_component_identifier",
                 "PROFILE_NAME": "sink_profile_name",
-                "NAME_BINDING": "sink_name_binding_2",
+                "NAME_BINDING": "sink_name_binding_4",
                 "NAMING_CONTEXT_IOR": self.naming_context_ior}
 
+        self.orb = create_orb()
+
+        component_poa = get_poa(
+                orb=self.orb,
+                thread_policy=thread_policy,
+                name="component_poa")
+
+        # Create the Resource
+        component_obj = UsesShort_i(
+                execparams["COMPONENT_IDENTIFIER"],
+                execparams)
+        # Activate the component servent
+        component_poa.activate_object(component_obj)
+        component_var = component_obj._this()
+
+        component_obj.orb = self.orb
+        component_obj.setAdditionalParameters(
+                softwareProfile=execparams["PROFILE_NAME"],
+                application_registrar_ior=self.naming_context_ior,
+                nic=nic)
+
         try:
-            try:
-                orb = create_orb()
-                
-                component_poa = get_poa(
-                        orb=orb,
-                        thread_policy=thread_policy,
-                        name="component_poa")
+            binding_object = self.orb.string_to_object(self.naming_context_ior)
+        except:
+            binding_object = None
+        if not binding_object:
+            logging.error("Failed to lookup application registrar and naming context")
+            sys.exit(-1)
 
+        application_registrar = binding_object._narrow(
+                CF.ApplicationRegistrar)
+        if not application_registrar:
+            name = URI.stringToName(execparams["NAME_BINDING"])
+            rootContext = binding_object._narrow(
+                    CosNaming.NamingContext)
+            rootContext.rebind(name, component_var)
+        else:
+            application_registrar.registerComponent(
+                    execparams["NAME_BINDING"],
+                    component_var)
 
-                # Create the Resource
-                component_Obj = UsesShort_i(
-                        execparams["COMPONENT_IDENTIFIER"],
-                        execparams)
-                # Activate the component servent
-                component_poa.activate_object(component_Obj)
-                component_Var = component_Obj._this()
-
-                component_Obj.orb = orb
-                component_Obj.setAdditionalParameters(
-                        softwareProfile=execparams["PROFILE_NAME"],
-                        application_registrar_ior=self.naming_context_ior,
-                        nic=nic)
-
-                try:
-                    binding_object = orb.string_to_object(self.naming_context_ior)
-                except:
-                    binding_object = None
-                if binding_object == None:
-                    logging.error("Failed to lookup application registrar and naming context")
-                    sys.exit(-1)
-
-                applicationRegistrar = binding_object._narrow(CF.ApplicationRegistrar)
-                applicationRegistrar = None
-                if applicationRegistrar == None:
-                    name = URI.stringToName(execparams["NAME_BINDING"])
-                    rootContext = binding_object._narrow(CosNaming.NamingContext)
-                    rootContext.rebind(name, component_Var)
-                else:
-                    applicationRegistrar.registerComponent(
-                            execparams["NAME_BINDING"],
-                            component_Var)
-
-                logging.info("Starting ORB event loop")
-                orb.run()
-
-                try:
-                   orb.shutdown(true)
-                except:
-                    pass
-            except SystemExit:
-                pass
-            except KeyboardInterrupt:
-                pass
-            except:
-                logging.exception("Unexpected Error")
-        finally:
-            if orb:
-                orb.destroy()
+        logging.info("Starting ORB event loop")
+        self.orb.run()
 
 
 if __name__ == "__main__":
