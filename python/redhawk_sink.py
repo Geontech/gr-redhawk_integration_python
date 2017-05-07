@@ -21,11 +21,12 @@
 
 import numpy
 from gnuradio import gr
-from ProvidesShort import ProvidesShort_i
+from UsesShort import UsesShort_i
 import logging
 from Queue import Queue
 import CosNaming
 import signal
+import Threading
 
 
 def createOrb():
@@ -61,38 +62,63 @@ def createOrb():
 # PROFILE_NAME /components/rh/SigGen/SigGen.spd.xml
 # DEBUG_LEVEL 3
 # NAMING_CONTEXT_IOR IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000010000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100
-def start_component(componentclass, interactive_callback=None, thread_policy=None):   
-    execparams, interactive = parseCommandLineArgs(componentclass)
-    name_binding="NOT SET"
-    setupSignalHandlers()
-    orb = None
-    globals()['__orb__'] = orb
 
-    try:
+
+
+class redhawk_sink(gr.sync_block, UsesShort_i):
+    """
+    docstring for block redhawk_sink
+    """
+    def __init__(
+            self,
+            naming_context_ior="IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000010000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"
+            corba_namespace_name):
+
+        orb_thread = threading.Thread(
+                name="orb",
+                target=self.start_orb)
+        orb_thread.setDaemon(True)
+        orb_thread.start()
+
+        self.start_orb(naming_context_ior)
+        gr.sync_block.__init__(self,
+            name="redhawk_sink",
+            in_sig=[numpy.float],
+            out_sig=None)
+
+    def start_orb(self, naming_context_ior, thread_policy=None):
+        name_binding="NOT SET"
+        setupSignalHandlers()
+        orb = None
+        globals()['__orb__'] = orb
+        nic=""
+
         try:
-            orb = createOrb()
-            globals()['__orb__'] = orb
-            name_binding=""
-            component_identifier=""
-            
-            componentPOA = getPOA(orb, thread_policy, "componentPOA")
+            try:
+                orb = createOrb()
+                globals()['__orb__'] = orb
+                name_binding=""
+                component_identifier=""
+                
+                componentPOA = getPOA(orb, thread_policy, "componentPOA")
 
-            name_binding=execparams.get("NAME_BINDING", "")
+                name_binding="sink_name_binding"
 
-            # Create the component
-            component_Obj = componentclass("sink_component_identifier", execparams)
-            componentPOA.activate_object(component_Obj)
-            component_Var = component_Obj._this()
-            nic = ''
-            if execparams.has_key('NIC'):
-                nic = execparams['NIC']
+                execparams = {
+                        "COMPONENT_IDENTIFIER": "sink_component_identifier",
+                        "PROFILE_NAME": "sink_profile_name",
+                        "NAME_BINDING": "sink_name_binding",
+                        "NAMING_CONTEXT_IOR": naming_context_ior}
 
-            component_Obj.setAdditionalParameters(execparams["sink_profile_name", execparams['NAMING_CONTEXT_IOR'], nic)
+                # Create the component
+                component_Obj = Resource("sink_component_identifier", execparams)
+                componentPOA.activate_object(component_Obj)
+                component_Var = component_Obj._this()
 
-            # get the naming context and bind to it
-            if execparams.has_key("NAMING_CONTEXT_IOR"):
+                component_Obj.setAdditionalParameters"sink_profile_name", naming_context_ior, nic)
+
                 try:
-                    binding_object = orb.string_to_object(execparams['NAMING_CONTEXT_IOR'])
+                    binding_object = orb.string_to_object(naming_context_ior)
                 except:
                     binding_object = None
                 if binding_object == None:
@@ -101,57 +127,32 @@ def start_component(componentclass, interactive_callback=None, thread_policy=Non
 
                 applicationRegistrar = binding_object._narrow(CF.ApplicationRegistrar)
                 if applicationRegistrar == None:
-                    name = URI.stringToName(execparams['NAME_BINDING'])
+                    name = URI.stringToName("sink_name_binding")
                     rootContext = binding_object._narrow(CosNaming.NamingContext)
                     rootContext.rebind(name, component_Var)
                 else:
-                    applicationRegistrar.registerComponent(execparams['NAME_BINDING'], component_Var)
-            else:
-                if not interactive:
-                    logging.warning("Skipping name-binding because required execparams 'NAMING_CONTEXT_IOR' is missing")
+                    applicationRegistrar.registerComponent("sink_name_binding", component_Var)
 
-            if not interactive:
                 logging.trace("Starting ORB event loop")
                 orb.run()
-            else:
-                logging.trace("Entering interactive mode")
-                if callable(interactive_callback):
-                    # Pass only the Var to prevent anybody from calling non-CORBA functions
-                    interactive_callback(component_Obj)
-                else:
-                    print orb.object_to_string(component_Obj._this())
-                    orb.run()
 
-            try:
-               orb.shutdown(true)
-            except:
+                try:
+                   orb.shutdown(true)
+                except:
+                    pass
+                signal.signal(signal.SIGINT, signal.SIG_IGN)
+            except SystemExit:
                 pass
-            signal.signal(signal.SIGINT, signal.SIG_IGN)
-        except SystemExit:
-            pass
-        except KeyboardInterrupt:
-            pass
-        except:
-            logging.exception("Unexpected Error")
-    finally:
-        if orb:
-            orb.destroy()
-
-
-
-class redhawk_sink(gr.sync_block, ProvidesShort_i):
-    """
-    docstring for block redhawk_sink
-    """
-    def __init__(self, naming_context_ior, corba_namespace_name):
-        gr.sync_block.__init__(self,
-            name="redhawk_sink",
-            in_sig=[numpy.float],
-            out_sig=None)
-
+            except KeyboardInterrupt:
+                pass
+            except:
+                logging.exception("Unexpected Error")
+        finally:
+            if orb:
+                orb.destroy()
 
     def work(self, input_items, output_items):
         in0 = input_items[0]
-        # <+signal processing here+>
+        # TODO: push to self.port_data_short_out
         return len(input_items[0])
 
