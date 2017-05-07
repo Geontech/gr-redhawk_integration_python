@@ -21,21 +21,43 @@
 
 import numpy
 from gnuradio import gr
+from ProvidesShort import ProvidesShort_i
+import time
+from orb_creator import OrbCreator
 
-class redhawk_source(gr.sync_block):
+
+class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
     """
     docstring for block redhawk_source
     """
     def __init__(self, naming_context_ior, corba_namespace_name):
+
+        self.exec_params = {
+                "COMPONENT_IDENTIFIER": "source_component_identifier",
+                "PROFILE_NAME": "source_profile_name",
+                "NAME_BINDING": "source_name_binding_5",
+                "NAMING_CONTEXT_IOR": naming_context_ior}
+
+        # TODO: determine if this is really needed
+        Provides_i.__init__(
+                self,
+                self.exec_params["COMPONENT_IDENTIFIER"],
+                self.exec_params)
+
+        OrbCreator.__init__(self)
+
         gr.sync_block.__init__(self,
             name="redhawk_source",
             in_sig=None,
             out_sig=[numpy.float])
 
+        print "sleeping"
+        time.sleep(5)
+        self.__del__()
 
     def work(self, input_items, output_items):
         out = output_items[0]
         # <+signal processing here+>
-        out[:] = whatever
+        #out[:] = whatever
         return len(output_items[0])
 

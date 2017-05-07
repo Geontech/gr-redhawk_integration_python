@@ -22,19 +22,7 @@
 import numpy
 from gnuradio import gr
 from UsesShort import UsesShort_i
-import logging
-from Queue import Queue
-import CosNaming
-import signal
-
-
-import logging
 import time
-import threading
-import sys
-
-import CosNaming
-from ossie.cf import CF
 from orb_creator import OrbCreator
 
 
