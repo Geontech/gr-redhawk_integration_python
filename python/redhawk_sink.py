@@ -35,7 +35,10 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
             naming_context_ior,
             corba_namespace_name):
 
-        naming_context_ior_="IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000030000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"
+        fp = open("/tmp/ior.txt", "r")
+        naming_context_ior_ = fp.read()
+        fp.close()
+
         corba_namespace_name_="sink_naming_binding"
 
         self.exec_params = {
