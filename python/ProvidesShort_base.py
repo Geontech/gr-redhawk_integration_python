@@ -7,7 +7,7 @@ from ossie.cf import CF
 from ossie.cf import CF__POA
 from ossie.utils import uuid
 
-from ossie.component import Component
+from component_ import Component
 from ossie.threadedcomponent import *
 
 import Queue, copy, time, threading

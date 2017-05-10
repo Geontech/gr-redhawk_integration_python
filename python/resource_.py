@@ -35,7 +35,7 @@ from ossie.properties import PropertyStorage
 from ossie.utils import uuid
 from ossie.threadedcomponent import ThreadedComponent
 import ossie.logger
-import containers
+import ossie.containers
 
 import sys
 import CosNaming

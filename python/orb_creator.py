@@ -14,7 +14,7 @@ from ossie.resource import getPOA
 class OrbCreator(object):
     def __init__(self):
         """
-        Requires self.exec_params to be defined, and parent to inherit from
+        Requires self.exec_params to be defined and parent to inherit from
         a component class.
         """
 
@@ -76,9 +76,9 @@ class OrbCreator(object):
                 CF.ApplicationRegistrar)
         if not application_registrar:
             name = URI.stringToName(self.exec_params["NAME_BINDING"])
-            rootContext = binding_object._narrow(
+            root_context = binding_object._narrow(
                     CosNaming.NamingContext)
-            rootContext.rebind(name, component_var)
+            root_context.rebind(name, component_var)
         else:
             application_registrar.registerComponent(
                     self.exec_params["NAME_BINDING"],
