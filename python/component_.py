@@ -35,6 +35,9 @@ class Component(Resource):
         return self._net
     
     def setAdditionalParameters(self, softwareProfile, application_registrar_ior, nic):
+        print softwareProfile
+        print application_registrar_ior
+        print nic
         super(Component,self).setAdditionalParameters(softwareProfile, application_registrar_ior, nic)
         orb = CORBA.ORB_init()
         obj = orb.string_to_object(application_registrar_ior)

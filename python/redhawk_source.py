@@ -32,14 +32,17 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
     """
     def __init__(
         self, 
-        naming_context_ior="IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000030000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100",
-        corba_namespace_name="sink_naming_binding"):
+        naming_context_ior,
+        corba_namespace_name):
+
+        naming_context_ior_="IOR:010000002000000049444c3a43462f4170706c69636174696f6e5265676973747261723a312e300001000000000000007c000000010102000a00000031302e302e322e3135009de329000000ff446f6d61696e4d616e61676572ff4170706c69636174696f6e73fe767e0c59040030ef00000000030000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100"
+        corba_namespace_name_="sink_naming_binding"
 
         self.exec_params = {
                 "COMPONENT_IDENTIFIER": "source_component_identifier",
                 "PROFILE_NAME": "source_profile_name",
-                "NAME_BINDING": corba_namespace_name,
-                "NAMING_CONTEXT_IOR": naming_context_ior}
+                "NAME_BINDING": corba_namespace_name_,
+                "NAMING_CONTEXT_IOR": naming_context_ior_}
 
         # TODO: determine if this is really needed
         ProvidesShort_i.__init__(
@@ -55,10 +58,6 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
                 in_sig=None,
                 out_sig=[numpy.float])
 
-        print "sleeping"
-        time.sleep(5)
-        self.__del__()
-
     def __del__(self):
         OrbCreator.__del__(self)
 
@@ -70,4 +69,4 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
 
 
 if __name__ == "__main__":
-    redhawk_source()
+    redhawk_source("", "")
