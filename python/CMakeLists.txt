@@ -31,6 +31,9 @@ endif()
 GR_PYTHON_INSTALL(
     FILES
     __init__.py
+    component_.py
+    resource_.py
+    orb_creator.py
     redhawk_sink.py
     redhawk_source.py DESTINATION ${GR_PYTHON_DIR}/redhawk_integration_python
 )
