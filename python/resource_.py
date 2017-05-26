@@ -484,6 +484,10 @@ class Resource(object):
             attr = getattr(type(self), name)
             if isinstance(attr, _port):
                 self.__ports[attr.name] = attr
+            # FIXME: this is a very flimsy way to match the port object.
+            #        need to figure out why isinstance is not working
+            if name.startswith("port_"):
+                self.__ports[attr.name] = attr
 
     #########################################
     #  Common resource logging API
