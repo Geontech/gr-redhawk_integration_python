@@ -431,7 +431,8 @@ class Resource(object):
         if self._ecm: ossie.events.Manager.Terminate()
         objid = self._default_POA().servant_to_id(self)
         self._default_POA().deactivate_object(objid)
-        __orb__.shutdown(False)
+        #__orb__.shutdown(False)
+        self.orb.shutdown(False)
 
     #########################################
     # CF::PortSupplier

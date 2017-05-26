@@ -39,7 +39,7 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
         naming_context_ior_ = fp.read()
         fp.close()
 
-        corba_namespace_name_="sink_naming_binding"
+        corba_namespace_name_="source_name_binding"
 
         self.exec_params = {
                 "COMPONENT_IDENTIFIER": "source_component_identifier",

@@ -39,7 +39,7 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
         naming_context_ior_ = fp.read()
         fp.close()
 
-        corba_namespace_name_="sink_naming_binding"
+        corba_namespace_name_="sink_name_binding"
 
         self.exec_params = {
                 "COMPONENT_IDENTIFIER": "sink_component_identifier",
