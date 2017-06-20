@@ -25,6 +25,7 @@ from ProvidesShort import ProvidesShort_i
 import time
 from orb_creator import OrbCreator
 
+from tag_utils import rh_packet_to_tag
 
 class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
     """
@@ -65,9 +66,18 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
         OrbCreator.__del__(self)
 
     def work(self, input_items, output_items):
-        out = output_items[0]
-        # <+signal processing here+>
-        #out[:] = whatever
+        # Get packet from CORBA port
+        packet = self.port_data_short_in.getPacket()
+        
+        if packet.dataBuffer is None:
+            return 0
+        
+        # Convert packet members to stream tag
+        # Copy the buffer
+        # Attach the tag to the stream
+        packetTag = rh_packet_to_tag(packet)
+        output_items[0] = packet.dataBuffer[:]
+        self.add_item_tag(0, packetTag)
         return len(output_items[0])
 
 

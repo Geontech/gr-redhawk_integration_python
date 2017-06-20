@@ -25,6 +25,7 @@ from UsesShort import UsesShort_i
 import time
 from orb_creator import OrbCreator
 
+from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY, RH_PACKET_TAG_INDEX
 
 class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
     """
@@ -65,11 +66,27 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
         OrbCreator.__del__(self)
 
     def work(self, input_items, output_items):
-        in0 = input_items[0]
-        # TODO: push to self.port_data_short_out
-        # TODO: initial push SRI
-        # TODO: self.port_data_short_out.pushPacket()
-        return len(input_items[0])
+        # Get SRI from incoming stream tags
+        tags = []
+        self.get_tags_in_range(\
+            tags, \
+            0, \
+            RH_PACKET_TAG_INDEX, \
+            RH_PACKET_TAG_INDEX, \
+            gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
+        
+        # If the tag is found, convert it.
+        if len(tags) > 0:
+            (SRI, changed, T, EOS) = tag_to_rh_packet(tags[0])
+
+        # If the SRI changed, push it.
+        if changed:
+            self.port_data_short_out.pushSRI(SRI)
+
+        # Push the data
+        buffer = input_items[0]
+        self.port_data_short_out.pushPacket(buffer, T, EOS, SRI.streamID)
+        return len(buffer)
 
 
 if __name__ == "__main__":
