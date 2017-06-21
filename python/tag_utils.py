@@ -19,6 +19,7 @@
 # Boston, MA 02110-1301, USA.
 # 
 
+from gnuradio import gr
 import bulkio
 
 RH_PACKET_TAG_KEY       = 'rh_packet'
@@ -31,7 +32,7 @@ RH_PACKET_KEY_EOS       = 'EOS'
 
 def rh_packet_to_tag(packet):
     rh_dict = dict({ \
-        RH_PACKET_KEY:          packet.SRI.__dict__, \
+        RH_PACKET_KEY_SRI:      packet.SRI.__dict__, \
         RH_PACKET_KEY_CHANGED:  packet.sriChanged, \
         RH_PACKET_KEY_T:        packet.T.__dict__, \
         RH_PACKET_KEY_EOS:      packet.EOS \
