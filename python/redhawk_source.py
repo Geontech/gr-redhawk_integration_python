@@ -69,9 +69,10 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
         # Copy the buffer
         # Attach the tag to the stream
         packetTag = rh_packet_to_tag(packet)
-        output_items[0] = packet.dataBuffer[:]
+        numItems = len(packet.dataBuffer)
+        output_items[0][0:numItems] = packet.dataBuffer[:]
         self.add_item_tag(0, packetTag)
-        return len(output_items[0])
+        return numItems
 
 
 if __name__ == "__main__":
