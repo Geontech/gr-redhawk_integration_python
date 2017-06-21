@@ -25,34 +25,27 @@ from UsesShort import UsesShort_i
 import time
 from orb_creator import OrbCreator
 
+import uuid
+
 from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY, RH_PACKET_TAG_INDEX
 
 class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
     """
     docstring for block redhawk_sink
     """
-    def __init__(
-            self,
-            naming_context_ior,
-            corba_namespace_name):
-
-        fp = open("/tmp/ior.txt", "r")
-        naming_context_ior_ = fp.read()
-        fp.close()
-
-        corba_namespace_name_="sink_name_binding"
-
+    def __init__(self, naming_context_ior, corba_namespace_name):
+        component_id = str(uuid.uuid4())
         self.exec_params = {
-                "COMPONENT_IDENTIFIER": "sink_component_identifier",
-                "PROFILE_NAME": "sink_profile_name",
-                "NAME_BINDING": corba_namespace_name_,
-                "NAMING_CONTEXT_IOR": naming_context_ior_}
+            "COMPONENT_IDENTIFIER": component_id,
+            "PROFILE_NAME":         "sink_profile_name",
+            "NAME_BINDING":         corba_namespace_name,
+            "NAMING_CONTEXT_IOR":   naming_context_ior}
 
         # TODO: determine if this is really needed
         UsesShort_i.__init__(
-                self,
-                self.exec_params["COMPONENT_IDENTIFIER"],
-                self.exec_params)
+            self,
+            self.exec_params["COMPONENT_IDENTIFIER"],
+            self.exec_params)
 
         OrbCreator.__init__(self)
 
@@ -67,26 +60,27 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
 
     def work(self, input_items, output_items):
         # Get SRI from incoming stream tags
-        tags = []
-        self.get_tags_in_range(\
-            tags, \
+        tags = self.get_tags_in_range(\
             0, \
             RH_PACKET_TAG_INDEX, \
-            RH_PACKET_TAG_INDEX, \
+            RH_PACKET_TAG_INDEX+1, \
             gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
+        dataOut = input_items[0]
         
         # If the tag is found, convert it.
         if len(tags) > 0:
+            print "Got tags"
             (SRI, changed, T, EOS) = tag_to_rh_packet(tags[0])
 
-        # If the SRI changed, push it.
-        if changed:
-            self.port_data_short_out.pushSRI(SRI)
+            # If the SRI changed, push it.
+            if changed:
+                self.port_data_short_out.pushSRI(SRI)
 
-        # Push the data
-        buffer = input_items[0]
-        self.port_data_short_out.pushPacket(buffer, T, EOS, SRI.streamID)
-        return len(buffer)
+            # Push the data
+            self.port_data_short_out.pushPacket(dataOut, T, EOS, SRI.streamID)
+        else:
+            print "No tags present.  Data length: {0}".format(len(dataOut))
+        return len(dataOut)
 
 
 if __name__ == "__main__":
