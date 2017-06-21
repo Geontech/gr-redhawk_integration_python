@@ -31,18 +31,18 @@ RH_PACKET_KEY_T         = 'T'
 RH_PACKET_KEY_EOS       = 'EOS'
 
 def rh_packet_to_tag(packet):
-    rh_dict = dict({ \
-        RH_PACKET_KEY_SRI:      packet.SRI.__dict__, \
-        RH_PACKET_KEY_CHANGED:  packet.sriChanged, \
-        RH_PACKET_KEY_T:        packet.T.__dict__, \
-        RH_PACKET_KEY_EOS:      packet.EOS \
+    rh_dict = dict({ 
+        RH_PACKET_KEY_SRI:      packet.SRI.__dict__, 
+        RH_PACKET_KEY_CHANGED:  packet.sriChanged, 
+        RH_PACKET_KEY_T:        packet.T.__dict__, 
+        RH_PACKET_KEY_EOS:      packet.EOS 
         })
     rh_pmt = gr.pmt.to_pmt(rh_dict)
-    tag = gr.python_to_tag((\
-        RH_PACKET_TAG_INDEX, \
-        gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY), \
-        rh_pmt, \
-        gr.pmt.string_to_symbol(packet.SRI.streamID) \
+    tag = gr.python_to_tag((
+        RH_PACKET_TAG_INDEX, 
+        gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY), 
+        rh_pmt, 
+        gr.pmt.string_to_symbol(packet.SRI.streamID) 
         ))
     return tag
 
