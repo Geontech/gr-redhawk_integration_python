@@ -25,34 +25,27 @@ from ProvidesShort import ProvidesShort_i
 import time
 from orb_creator import OrbCreator
 
+import uuid
+
 from tag_utils import rh_packet_to_tag
 
 class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
     """
     docstring for block redhawk_source
     """
-    def __init__(
-        self, 
-        naming_context_ior,
-        corba_namespace_name):
-
-        fp = open("/tmp/ior.txt", "r")
-        naming_context_ior_ = fp.read()
-        fp.close()
-
-        corba_namespace_name_="source_name_binding"
-
+    def __init__(self, naming_context_ior, corba_namespace_name):
+        component_id = str(uuid.uuid4())
         self.exec_params = {
-                "COMPONENT_IDENTIFIER": "source_component_identifier",
-                "PROFILE_NAME": "source_profile_name",
-                "NAME_BINDING": corba_namespace_name_,
-                "NAMING_CONTEXT_IOR": naming_context_ior_}
+            "COMPONENT_IDENTIFIER": component_id,
+            "PROFILE_NAME":         "source_profile_name",
+            "NAME_BINDING":         corba_namespace_name,
+            "NAMING_CONTEXT_IOR":   naming_context_ior}
 
         # TODO: determine if this is really needed
         ProvidesShort_i.__init__(
-                self,
-                self.exec_params["COMPONENT_IDENTIFIER"],
-                self.exec_params)
+            self,
+            self.exec_params["COMPONENT_IDENTIFIER"],
+            self.exec_params)
 
         OrbCreator.__init__(self)
 
