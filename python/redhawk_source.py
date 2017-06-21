@@ -53,7 +53,7 @@ class redhawk_source(gr.sync_block, ProvidesShort_i, OrbCreator):
                 self,
                 name="redhawk_source",
                 in_sig=None,
-                out_sig=[numpy.float])
+                out_sig=[numpy.short])
 
     def __del__(self):
         OrbCreator.__del__(self)

@@ -22,10 +22,9 @@
 import numpy
 from gnuradio import gr
 from UsesShort import UsesShort_i
-import time
 from orb_creator import OrbCreator
 
-import uuid
+import uuid, bulkio
 
 from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY, RH_PACKET_TAG_INDEX
 
@@ -52,7 +51,7 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
         gr.sync_block.__init__(
                 self,
                 name="redhawk_sink",
-                in_sig=[numpy.float],
+                in_sig=[numpy.short],
                 out_sig=None)
 
     def __del__(self):
@@ -60,16 +59,15 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
 
     def work(self, input_items, output_items):
         # Get SRI from incoming stream tags
-        tags = self.get_tags_in_range(\
-            0, \
-            RH_PACKET_TAG_INDEX, \
-            RH_PACKET_TAG_INDEX+1, \
+        tags = self.get_tags_in_range(
+            0, 
+            RH_PACKET_TAG_INDEX, 
+            RH_PACKET_TAG_INDEX+1, 
             gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
         dataOut = input_items[0]
         
         # If the tag is found, convert it.
         if len(tags) > 0:
-            print "Got tags"
             (SRI, changed, T, EOS) = tag_to_rh_packet(tags[0])
 
             # If the SRI changed, push it.
@@ -77,9 +75,7 @@ class redhawk_sink(gr.sync_block, UsesShort_i, OrbCreator):
                 self.port_data_short_out.pushSRI(SRI)
 
             # Push the data
-            self.port_data_short_out.pushPacket(dataOut, T, EOS, SRI.streamID)
-        else:
-            print "No tags present.  Data length: {0}".format(len(dataOut))
+            self.port_data_short_out.pushPacket(dataOut.tolist(), T, EOS, SRI.streamID)
         return len(dataOut)
 
 
