@@ -40,6 +40,7 @@ GR_PYTHON_INSTALL(
     ProvidesPorts_base.py
     redhawk_sink.py
     tag_utils.py
+    type_mapping.py
     redhawk_source.py DESTINATION ${GR_PYTHON_DIR}/redhawk_integration_python
 )
 
