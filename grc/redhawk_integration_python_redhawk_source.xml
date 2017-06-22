@@ -4,7 +4,7 @@
   <key>redhawk_integration_redhawk_source</key>
   <category>[redhawk_integration]</category>
   <import>import redhawk_integration</import>
-  <make>redhawk_integration.redhawk_source($corba_namespace_name)</make>
+  <make>redhawk_integration.redhawk_source($naming_context_ior, $corba_namespace_name, $type)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -21,6 +21,32 @@
     <type>string</type>
   </param>
 
+  <param>
+    <name>Output Type</name>
+    <key>type</key>
+    <type>enum</type>
+    <option>
+      <name>Complex</name>
+      <key>complex</key>
+    </option>
+    <option>
+      <name>Float</name>
+      <key>float</key>
+    </option>
+    <option>
+      <name>Int</name>
+      <key>int</key>
+    </option>
+    <option>
+      <name>Short</name>
+      <key>short</key>
+    </option>
+    <option>
+      <name>Byte</name>
+      <key>byte</key>
+    </option>
+  </param>
+
   <!-- Make one 'source' node per output. Sub-nodes:
        * name (an identifier for the GUI)
        * type
@@ -28,6 +54,7 @@
        * optional (set to 1 for optional inputs) -->
   <source>
     <name>out</name>
-    <type>short</type>
+    <type>$type</type>
+    <nports>1</nports>
   </source>
 </block>

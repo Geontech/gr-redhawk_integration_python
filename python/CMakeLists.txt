@@ -34,12 +34,13 @@ GR_PYTHON_INSTALL(
     component_.py
     resource_.py
     orb_creator.py
-    UsesShort.py
-    ProvidesShort.py
-    UsesShort_base.py
-    ProvidesShort_base.py
+    UsesPorts.py
+    ProvidesPorts.py
+    UsesPorts_base.py
+    ProvidesPorts_base.py
     redhawk_sink.py
     tag_utils.py
+    type_mapping.py
     redhawk_source.py DESTINATION ${GR_PYTHON_DIR}/redhawk_integration_python
 )
 

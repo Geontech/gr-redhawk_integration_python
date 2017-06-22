@@ -49,9 +49,6 @@ class OrbCreator(object):
                 name="component_poa")
 
         # Create the Resource
-        #component_obj = UsesShort_i(
-        #        self.exec_params["COMPONENT_IDENTIFIER"],
-        #        self.exec_params)
         component_obj = self
         # Activate the component servent
         component_poa.activate_object(component_obj)

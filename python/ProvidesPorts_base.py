@@ -2,7 +2,7 @@
 #
 # AUTO-GENERATED CODE.  DO NOT MODIFY!
 #
-# Source: UsesShort.spd.xml
+# Source: ProvidesPorts.spd.xml
 from ossie.cf import CF
 from ossie.cf import CF__POA
 from ossie.utils import uuid
@@ -14,7 +14,9 @@ import Queue, copy, time, threading
 from ossie.resource import usesport, providesport
 import bulkio
 
-class UsesShort_base(CF__POA.Resource, Component, ThreadedComponent):
+import type_mapping
+
+class ProvidesPorts_base(CF__POA.Resource, Component, ThreadedComponent):
         # These values can be altered in the __init__ of your derived class
 
         PAUSE = 0.0125 # The amount of time to sleep if process return NOOP
@@ -31,7 +33,10 @@ class UsesShort_base(CF__POA.Resource, Component, ThreadedComponent):
             # in future releases
             self.auto_start = False
             # Instantiate the default implementations for all ports on this component
-            self.port_data_short_out = bulkio.OutShortPort("data_short_out")
+            self.port_data_float_in = bulkio.InFloatPort("data_float_in", maxsize=self.DEFAULT_QUEUE_SIZE)
+            self.port_data_long_in  = bulkio.InLongPort("data_long_in",   maxsize=self.DEFAULT_QUEUE_SIZE)
+            self.port_data_short_in = bulkio.InShortPort("data_short_in", maxsize=self.DEFAULT_QUEUE_SIZE)
+            self.port_data_octet_in = bulkio.InOctetPort("data_octet_in", maxsize=self.DEFAULT_QUEUE_SIZE)
 
         def start(self):
             Component.start(self)
@@ -55,9 +60,18 @@ class UsesShort_base(CF__POA.Resource, Component, ThreadedComponent):
         # DO NOT ADD NEW PORTS HERE.  You can add ports in your derived class, in the SCD xml file, 
         # or via the IDE.
 
-        port_data_short_out = usesport(name="data_short_out",
-                                       repid="IDL:BULKIO/dataShort:1.0",
-                                       type_="control")
+        port_data_float_in = providesport(name="data_float_in",
+                                          repid="IDL:BULKIO/dataFloat:1.0",
+                                          type_="control")
+        port_data_long_in = providesport(name="data_long_in",
+                                          repid="IDL:BULKIO/dataLong:1.0",
+                                          type_="control")
+        port_data_short_in = providesport(name="data_short_in",
+                                          repid="IDL:BULKIO/dataShort:1.0",
+                                          type_="control")
+        port_data_octet_in = providesport(name="data_octet_in",
+                                          repid="IDL:BULKIO/dataOctet:1.0",
+                                          type_="control")
 
         ######################################################################
         # PROPERTIES

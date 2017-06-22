@@ -3,13 +3,13 @@
 #
 # AUTO-GENERATED
 #
-# Source: UsesShort.spd.xml
+# Source: UsesPorts.spd.xml
 from ossie.resource import start_component
 import logging
 
-from UsesShort_base import *
+from UsesPorts_base import *
 
-class UsesShort_i(UsesShort_base):
+class UsesPorts_i(UsesPorts_base):
     """<DESCRIPTION GOES HERE>"""
     def constructor(self):
         """
@@ -77,14 +77,14 @@ class UsesShort_i(UsesShort_base):
                 print msg_id, msg_value
         
             Register the message callback onto the input port with the following form:
-            self.port_input.registerMessage("my_msg", UsesShort_i.MyMsg, self.msg_callback)
+            self.port_input.registerMessage("my_msg", UsesPorts_i.MyMsg, self.msg_callback)
         
             To send a message, you need to (1) create a message structure, and (2) send the message over the port.
         
             Assuming a property of type message is declared called "my_msg", an output port called "msg_output" is declared of
             type MessageEvent, create the following code:
         
-            msg_out = UsesShort_i.MyMsg()
+            msg_out = UsesPorts_i.MyMsg()
             this.port_msg_output.sendMessage(msg_out)
 
     Accessing the Device Manager and Domain Manager:
@@ -115,7 +115,7 @@ class UsesShort_i(UsesShort_base):
         Example:
         
             # This example assumes that the component has two ports:
-            #   - A provides (input) port of type bulkio.InShortPort called dataShort_in
+            #   - A provides (input) port of type bulkio.InPortsPort called dataPorts_in
             #   - A uses (output) port of type bulkio.OutFloatPort called dataFloat_out
             # The mapping between the port and the class if found in the component
             # base class.
@@ -123,7 +123,7 @@ class UsesShort_i(UsesShort_base):
             #   - A float value called amplitude
             #   - A boolean called increaseAmplitude
             
-            packet = self.port_dataShort_in.getPacket()
+            packet = self.port_dataPorts_in.getPacket()
             
             if packet.dataBuffer is None:
                 return NOOP
@@ -152,5 +152,5 @@ class UsesShort_i(UsesShort_base):
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     logging.debug("Starting Component")
-    start_component(UsesShort_i)
+    start_component(UsesPorts_i)
 
