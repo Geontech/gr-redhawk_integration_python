@@ -23,7 +23,6 @@ import numpy
 from gnuradio import gr
 from ProvidesPorts import ProvidesPorts_i
 import time
-from orb_creator import OrbCreator
 
 import warnings
 import uuid
@@ -31,7 +30,7 @@ import uuid
 from tag_utils import rh_packet_to_tag
 import type_mapping
 
-class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
+class redhawk_source(gr.sync_block, ProvidesPorts_i):
     """
     docstring for block redhawk_source
     """
@@ -48,8 +47,6 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
             self,
             self.exec_params["COMPONENT_IDENTIFIER"],
             self.exec_params)
-
-        OrbCreator.__init__(self)
 
         self.gr_type = gr_type
         if   gr_type == type_mapping.GR_COMPLEX or gr_type == type_mapping.GR_FLOAT:
@@ -68,9 +65,6 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
             name="redhawk_source",
             in_sig=None,
             out_sig=[ type_mapping.SUPPORTED_GR_TYPES[gr_type] ])
-
-    def __del__(self):
-        OrbCreator.__del__(self)
 
     def work(self, input_items, output_items):
         # Get packet from CORBA port

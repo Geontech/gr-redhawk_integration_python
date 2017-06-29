@@ -23,14 +23,13 @@ import numpy
 import warnings
 from gnuradio import gr
 from UsesPorts import UsesPorts_i
-from orb_creator import OrbCreator
 
 import uuid, bulkio
 
 from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY, RH_PACKET_TAG_INDEX
 import type_mapping
 
-class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
+class redhawk_sink(gr.sync_block, UsesPorts_i):
     """
     docstring for block redhawk_sink
     """
@@ -47,8 +46,6 @@ class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
             self,
             self.exec_params["COMPONENT_IDENTIFIER"],
             self.exec_params)
-
-        OrbCreator.__init__(self)
 
         self.gr_type = gr_type
         if   gr_type == type_mapping.GR_COMPLEX or gr_type == type_mapping.GR_FLOAT:
@@ -67,9 +64,6 @@ class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
             name="redhawk_sink",
             in_sig=[ type_mapping.SUPPORTED_GR_TYPES[gr_type] ],
             out_sig=None)
-
-    def __del__(self):
-        OrbCreator.__del__(self)
 
     def work(self, input_items, output_items):
         # Get SRI from incoming stream tags
