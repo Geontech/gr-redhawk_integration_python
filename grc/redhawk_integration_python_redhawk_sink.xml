@@ -3,8 +3,8 @@
   <name>redhawk_sink</name>
   <key>redhawk_integration_redhawk_sink</key>
   <category>redhawk_integration</category>
-  <import>import redhawk_integration</import>
-  <make>redhawk_integration.redhawk_sink($naming_context_ior, $corba_namespace_name, "$type")</make>
+  <import>import redhawk_integration_python</import>
+  <make>redhawk_integration_python.redhawk_sink($naming_context_ior, $corba_namespace_name, "$type")</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
