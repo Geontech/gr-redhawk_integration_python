@@ -100,16 +100,12 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
             packet = self.__active_port.getPacket()
             if packet.dataBuffer is not None:
                 self.dtRecords.append(DTRecord(packet))
-                print "Added fresh packet"
                 if 1 == len(self.dtRecords):
                     first = True
 
         elif self.queueFullWarnOnce:
             warnings.warn('Packet queue full.')
             self.queueFullWarnOnce = False
-
-        if first:
-            print "Prepping for first packet read"
 
         record = None
         if 0 < len(self.dtRecords):
@@ -125,12 +121,16 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
         #    Return number of items processed
         dtRecord = None
         first = False
+        pauseCount = 4
         while True:
             (dtRecord, first) = self.getDTRecord()
             if dtRecord:
                 break;
             else:
-                time.sleep(0.25)
+                time.sleep(1.0/pauseCount)
+                pauseCount -= 1
+                if 0 >= pauseCount:
+                    return 0; # Abort.  This is to give work() a chance to exit.
 
         if first:
             # Sanity check SRI vs. data type and warn user JIC.
@@ -138,8 +138,7 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
                 warnings.warn('Port type was specified as complex, but SRI indicates real data')
 
             # Convert packet members to stream tag and add it.
-            print "Pushing SRI, etc."
-            packetTag = rh_packet_to_tag(dtRecord.packet)
+            packetTag = rh_packet_to_tag(dtRecord.packet, 0)
             self.add_item_tag(0, packetTag)
 
         # Determine number of items that can be moved, move them.
@@ -148,7 +147,6 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
         num_to_send = min([db_len, noutput_items])
         output_items[0][0:num_to_send] = dtRecord.buffer_out[0:num_to_send]
         dtRecord.buffer_out = dtRecord.buffer_out[num_to_send+1:]
-        print "Pushing buffer: {0}".format(num_to_send)
 
         return num_to_send
 
