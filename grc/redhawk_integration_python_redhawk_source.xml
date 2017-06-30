@@ -3,8 +3,8 @@
   <name>redhawk_source</name>
   <key>redhawk_integration_redhawk_source</key>
   <category>redhawk_integration</category>
-  <import>import redhawk_integration</import>
-  <make>redhawk_integration.redhawk_source($naming_context_ior, $corba_namespace_name, "$type")</make>
+  <import>import redhawk_integration_python</import>
+  <make>redhawk_integration_python.redhawk_source($naming_context_ior, $corba_namespace_name, "$type", $packet_depth)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -49,6 +49,13 @@
       <name>Byte</name>
       <key>byte</key>
     </option>
+  </param>
+
+  <param>
+    <name>Packet Buffer Depth</name>
+    <key>packet_depth</key>
+    <value>10</value>
+    <type>int</type>
   </param>
 
   <!-- Make one 'source' node per output. Sub-nodes:

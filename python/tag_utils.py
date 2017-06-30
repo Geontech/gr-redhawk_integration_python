@@ -29,13 +29,15 @@ RH_PACKET_KEY_SRI       = 'sri'
 RH_PACKET_KEY_CHANGED   = 'changed'
 RH_PACKET_KEY_T         = 'T'
 RH_PACKET_KEY_EOS       = 'EOS'
+RH_PACKET_KEY_LENGTH    = 'length'
 
 def rh_packet_to_tag(packet):
     rh_dict = dict({ 
         RH_PACKET_KEY_SRI:      packet.SRI.__dict__, 
         RH_PACKET_KEY_CHANGED:  packet.sriChanged, 
         RH_PACKET_KEY_T:        packet.T.__dict__, 
-        RH_PACKET_KEY_EOS:      packet.EOS 
+        RH_PACKET_KEY_EOS:      packet.EOS,
+        RH_PACKET_KEY_LENGTH:   len(packet.dataBuffer)
         })
     rh_pmt = gr.pmt.to_pmt(rh_dict)
     tag = gr.python_to_tag((
@@ -52,6 +54,7 @@ def tag_to_rh_packet(tag):
     T = bulkio.timestamp.now()
     EOS = False
     SRI = bulkio.sri.create()
+    length = 0
     
     # Convert
     tag_p = gr.tag_to_python(tag)
@@ -62,8 +65,9 @@ def tag_to_rh_packet(tag):
         changed         = packet.pop(RH_PACKET_KEY_CHANGED)
         T.__dict__      = packet.pop(RH_PACKET_KEY_T)
         EOS             = packet.pop(RH_PACKET_KEY_EOS)
+        length          = packet.pop(RH_PACKET_KEY_LENGTH)
             
-    return (SRI, changed, T, EOS)
+    return (SRI, changed, T, EOS, length)
 
 
 if __name__ == "__main__":
