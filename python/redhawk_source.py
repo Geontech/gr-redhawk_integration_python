@@ -137,9 +137,11 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
             if self.gr_type == type_mapping.GR_COMPLEX and dtRecord.packet.SRI.mode == 0:
                 warnings.warn('Port type was specified as complex, but SRI indicates real data')
 
-            # Convert packet members to stream tag and add it.
-            packetTag = rh_packet_to_tag(dtRecord.packet, 0)
-            self.add_item_tag(0, packetTag)
+            # If the packet's SRI changed:
+            # Convert packet members to stream tag and add it to the stream
+            if dtRecord.packet.sriChanged:
+                packetTag = rh_packet_to_tag(dtRecord.packet, 0)
+                self.add_item_tag(0, packetTag)
 
         # Determine number of items that can be moved, move them.
         noutput_items = len(output_items[0])
