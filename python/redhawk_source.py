@@ -141,11 +141,11 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
 
             # If the packet's SRI changed:
             # Convert packet members to stream tag and add it to the stream
-            # if dtRecord.packet.sriChanged:
-            self.tagsSent += 1
-            self._log.debug('Source: Adding packet data as stream tag (total: {0})'.format(self.tagsSent))
-            packetTag = rh_packet_to_tag(dtRecord.packet, 0)
-            self.add_item_tag(0, packetTag)
+            if dtRecord.packet.sriChanged:
+                self.tagsSent += 1
+                self._log.debug('Source: Adding packet data as stream tag (total: {0})'.format(self.tagsSent))
+                packetTag = rh_packet_to_tag(dtRecord.packet, 0)
+                self.add_item_tag(0, packetTag)
 
         # Determine number of items that can be moved, move them.
         noutput_items = len(output_items[0])
