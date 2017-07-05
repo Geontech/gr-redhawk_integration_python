@@ -74,7 +74,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         self.currentEOS = False
         self.currentLength = 0
         self.remainingLength = 0
-        self.currentBuffer = numpy.array([])
+        self.currentBuffer = None
 
     def pushPacket(self):
         self._log.info("Pushing Packet")
@@ -150,6 +150,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
                             self.__active_port.pushSRI(self.currentSRI)
 
                 # Reset remaining length to current (stream tag's indicated) length.
+                self.currentBuffer = numpy.array([])
                 self.remainingLength = self.currentLength
 
         # Return the number of elements processed.
