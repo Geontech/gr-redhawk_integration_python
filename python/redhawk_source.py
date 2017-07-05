@@ -24,7 +24,6 @@ from gnuradio import gr
 from ProvidesPorts import ProvidesPorts_i
 import time
 
-import warnings
 import uuid
 
 from tag_utils import rh_packet_to_tag
@@ -78,6 +77,7 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
 
         self.dtRecords = deque([], packet_depth)
         self.queueFullWarnOnce = True
+        self.tagsSent = 0
 
     '''
     Get a data transfer record either from the queue or the port.
@@ -90,6 +90,7 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
         # Check for empty buffer, if so remove it. Next returned packet is
         # definitively the first of the number of times it has been returned.
         if 0 < len(self.dtRecords) and 0 == len(self.dtRecords[0].buffer_out):
+            self._log.debug('Source: Current packet has been sent; continuing to next')
             first = True
             self.dtRecords.popleft()
 
@@ -99,12 +100,13 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
 
             packet = self.__active_port.getPacket()
             if packet.dataBuffer is not None:
+                self._log.debug('Source: New packet received from REDHAWK')
                 self.dtRecords.append(DTRecord(packet))
                 if 1 == len(self.dtRecords):
                     first = True
 
         elif self.queueFullWarnOnce:
-            warnings.warn('Packet queue full.')
+            self._log.warning('Source: Packet queue full.')
             self.queueFullWarnOnce = False
 
         record = None
@@ -135,13 +137,15 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
         if first:
             # Sanity check SRI vs. data type and warn user JIC.
             if self.gr_type == type_mapping.GR_COMPLEX and dtRecord.packet.SRI.mode == 0:
-                warnings.warn('Port type was specified as complex, but SRI indicates real data')
+                self._log.warning('Source: Port type was specified as complex, but SRI indicates real data')
 
             # If the packet's SRI changed:
             # Convert packet members to stream tag and add it to the stream
-            if dtRecord.packet.sriChanged:
-                packetTag = rh_packet_to_tag(dtRecord.packet, 0)
-                self.add_item_tag(0, packetTag)
+            # if dtRecord.packet.sriChanged:
+            self.tagsSent += 1
+            self._log.debug('Source: Adding packet data as stream tag (total: {0})'.format(self.tagsSent))
+            packetTag = rh_packet_to_tag(dtRecord.packet, 0)
+            self.add_item_tag(0, packetTag)
 
         # Determine number of items that can be moved, move them.
         noutput_items = len(output_items[0])
@@ -149,6 +153,8 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
         num_to_send = min([db_len, noutput_items])
         output_items[0][0:num_to_send] = dtRecord.buffer_out[0:num_to_send]
         dtRecord.buffer_out = dtRecord.buffer_out[num_to_send+1:]
+
+        self._log.debug('Source: Number of elements sent: {0}'.format(num_to_send))
 
         return num_to_send
 
