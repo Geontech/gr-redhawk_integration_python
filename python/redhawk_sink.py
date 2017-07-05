@@ -77,7 +77,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         self.currentBuffer = None
 
     def pushPacket(self):
-        self._log.info("Pushing Packet")
+        self._log.debug("Pushing Packet")
         self._log.debug("\tcurrentBuffer type:       {0}".format(self.currentBuffer.__class__.__name__))
         self._log.debug("\tcurrentT type:            {0}".format(self.currentT.__class__.__name__))
         self._log.debug("\tcurrentEOS type:          {0}".format(self.currentEOS.__class__.__name__))
@@ -96,14 +96,14 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         ninput_items = len(input_buffer)
         total_ninput = ninput_items
 
-        self._log.info("Entering work...")
+        self._log.debug("Entering work...")
 
         while 0 < ninput_items:
             if 0 < self.remainingLength:
                 # Copy some amount from one buffer to the other (either all of it
                 # or just enough to finish off the remainingLength).
                 amt = min([ninput_items, self.remainingLength])
-                self._log.info("Copying {0} items min([{1},{2}])".format(amt, ninput_items, self.remainingLength))
+                self._log.debug("Copying {0} items min([{1},{2}])".format(amt, ninput_items, self.remainingLength))
                 if 0 == self.currentBuffer.size:
                     self.currentBuffer.dtype = input_buffer.dtype
                 self.currentBuffer = numpy.append(self.currentBuffer, input_buffer[0:amt])
@@ -113,9 +113,9 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
                 self.remainingLength -= amt
                 ninput_items -= amt
                 num_processed += amt
-                self._log.info("remaining for packet: {0}".format(self.remainingLength))
-                self._log.info("remaining from input: {0}".format(ninput_items))
-                self._log.info("total processed:      {0}".format(num_processed))
+                self._log.debug("remaining for packet: {0}".format(self.remainingLength))
+                self._log.debug("remaining from input: {0}".format(ninput_items))
+                self._log.debug("total processed:      {0}".format(num_processed))
 
             # Not waiting for more data for the current packet...
             if 0 >= self.remainingLength:
@@ -127,13 +127,13 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
                 if 0 < ninput_items:
                     # Still some data remaining for next loop
                     # Look for rh_packet stream tag
-                    self._log.info("Searching for rh_packet tag")
-                    self._log.info("Total vs. remaining {0} : {1}".format(total_ninput, ninput_items))
+                    self._log.debug("Searching for rh_packet tag")
+                    self._log.debug("Total vs. remaining {0} : {1}".format(total_ninput, ninput_items))
                     tags = self.get_tags_in_range(0, 0, total_ninput,
                         gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
 
                     if 0 < len(tags):
-                        self._log.info("Found rh_packet Tag (num: {0}).".format(len(tags)))
+                        self._log.debug("Found rh_packet Tag (num: {0}).".format(len(tags)))
                         (   self.currentSRI,
                             self.currentChanged,
                             self.currentT,
@@ -146,7 +146,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
 
                         # SRI Changed? Push.
                         if self.currentChanged:
-                            self._log.info("Pushing SRI (indicated changed)")
+                            self._log.debug("Pushing SRI (indicated changed)")
                             self.__active_port.pushSRI(self.currentSRI)
 
                 # Reset remaining length to current (stream tag's indicated) length.
@@ -154,8 +154,8 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
                 self.remainingLength = self.currentLength
 
         # Return the number of elements processed.
-        self._log.info("Grand total processed {0}".format(num_processed))
-        self._log.info("Exiting work...")
+        self._log.debug("Grand total processed {0}".format(num_processed))
+        self._log.debug("Exiting work...")
         return num_processed
 
 if __name__ == "__main__":
