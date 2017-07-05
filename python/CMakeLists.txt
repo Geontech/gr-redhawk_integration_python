@@ -33,7 +33,6 @@ GR_PYTHON_INSTALL(
     __init__.py
     component_.py
     resource_.py
-    orb_creator.py
     UsesPorts.py
     ProvidesPorts.py
     UsesPorts_base.py

@@ -20,17 +20,15 @@
 # 
 
 import numpy
-import warnings
 from gnuradio import gr
 from UsesPorts import UsesPorts_i
-from orb_creator import OrbCreator
 
 import uuid, bulkio
 
-from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY, RH_PACKET_TAG_INDEX
+from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY
 import type_mapping
 
-class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
+class redhawk_sink(gr.sync_block, UsesPorts_i):
     """
     docstring for block redhawk_sink
     """
@@ -47,8 +45,6 @@ class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
             self,
             self.exec_params["COMPONENT_IDENTIFIER"],
             self.exec_params)
-
-        OrbCreator.__init__(self)
 
         self.gr_type = gr_type
         if   gr_type == type_mapping.GR_COMPLEX or gr_type == type_mapping.GR_FLOAT:
@@ -68,33 +64,99 @@ class redhawk_sink(gr.sync_block, UsesPorts_i, OrbCreator):
             in_sig=[ type_mapping.SUPPORTED_GR_TYPES[gr_type] ],
             out_sig=None)
 
-    def __del__(self):
-        OrbCreator.__del__(self)
+        self.resetCurrentSRI()
+        self.tagsReceived = 0
+
+    def resetCurrentSRI(self):
+        self.currentSRI = None
+        self.currentChanged = False
+        self.currentT = None
+        self.currentEOS = False
+        self.currentLength = 0
+        self.remainingLength = 0
+        self.currentBuffer = None
+
+    def pushPacket(self):
+        self._log.debug("Sink: Pushing Packet")
+        self._log.debug("Sink: \tcurrentBuffer type:       {0}".format(self.currentBuffer.__class__.__name__))
+        self._log.debug("Sink: \tcurrentT type:            {0}".format(self.currentT.__class__.__name__))
+        self._log.debug("Sink: \tcurrentEOS type:          {0}".format(self.currentEOS.__class__.__name__))
+        self._log.debug("Sink: \tcurrentSRI.streamID type: {0}".format(self.currentSRI.streamID.__class__.__name__))
+        self.__active_port.pushPacket(
+            self.currentBuffer.tolist(),
+            bulkio.timestamp.now(),
+            self.currentEOS,
+            self.currentSRI.streamID)
+
 
     def work(self, input_items, output_items):
-        # Get SRI from incoming stream tags
-        tags = self.get_tags_in_range(
-            0, 
-            RH_PACKET_TAG_INDEX, 
-            RH_PACKET_TAG_INDEX+1, 
-            gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
-        dataOut = input_items[0][:]
-        
-        # If the tag is found, convert it, push as needed
-        if len(tags) > 0:
-            (SRI, changed, T, EOS) = tag_to_rh_packet(tags[0])
+        # NOTE: ninput_items will never be 0
+        num_processed = 0
+        input_buffer = input_items[0][:]
+        ninput_items = len(input_buffer)
+        total_ninput = ninput_items
 
-            # Verify if 'complex' port 0 was used that SRI mode is set 1
-            if self.gr_type == type_mapping.GR_COMPLEX and SRI.mode == 0:
-                warnings.warn('Port type was specified as complex, but SRI indicates real data')
+        self._log.debug("Sink: Entering work...")
 
-            # If the SRI changed, push it.
-            if changed:
-                self.__active_port.pushSRI(SRI)
+        while 0 < ninput_items:
+            if 0 < self.remainingLength:
+                # Copy some amount from one buffer to the other (either all of it
+                # or just enough to finish off the remainingLength).
+                amt = min([ninput_items, self.remainingLength])
+                self._log.debug("Sink: Copying {0} items min([{1},{2}])".format(amt, ninput_items, self.remainingLength))
 
-            # Push the data
-            self.__active_port.pushPacket(dataOut.tolist(), T, EOS, SRI.streamID)
-        return len(dataOut)
+                if 0 == self.currentBuffer.size:
+                    self.currentBuffer.dtype = input_buffer.dtype
+                self.currentBuffer = numpy.append(self.currentBuffer, input_buffer[0:amt])
+                input_buffer = input_buffer[amt+1:]
+
+                # adjust counters
+                self.remainingLength -= amt
+                ninput_items -= amt
+                num_processed += amt
+
+                self._log.debug("Sink: remaining for packet: {0}".format(self.remainingLength))
+                self._log.debug("Sink: remaining from input: {0}".format(ninput_items))
+                self._log.debug("Sink: total processed:      {0}".format(num_processed))
+
+            # Not waiting for more data for the current packet...
+            if 0 >= self.remainingLength:
+                if 0 < num_processed:
+                    # Data was processed, so the buffer has something.
+                    # Must be finished, so push the packet.
+                    self.pushPacket()
+
+                # Look for rh_packet stream tag
+                self._log.debug("Sink: Searching for rh_packet tag")
+                tags = self.get_tags_in_range(0, 0, total_ninput,
+                    gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
+
+                if 0 < len(tags):
+                    self.tagsReceived += 1
+                    self._log.debug("Sink: Found rh_packet Tag (num: {0}, total received: {1}).".format(len(tags), self.tagsReceived))
+                    (   self.currentSRI,
+                        self.currentChanged,
+                        self.currentT,
+                        self.currentEOS,
+                        self.currentLength   ) = tag_to_rh_packet(tags[0])
+
+                    # Verify if 'complex' port 0 was used that SRI mode is set 1
+                    if self.gr_type == type_mapping.GR_COMPLEX and this.currentSRI.mode == 0:
+                        self._log.warning('Sink: Port type was specified as complex, but SRI indicates real data')
+
+                    # SRI Changed? Push.
+                    if self.currentChanged:
+                        self._log.debug("Sink: Pushing SRI (indicated changed)")
+                        self.__active_port.pushSRI(self.currentSRI)
+
+                # Reset remaining length to current (stream tag's indicated) length.
+                self.currentBuffer = numpy.array([])
+                self.remainingLength = self.currentLength
+
+        # Return the number of elements processed.
+        self._log.debug("Sink: Grand total processed {0}".format(num_processed))
+        self._log.debug("Sink: Exiting work...")
+        return num_processed
 
 if __name__ == "__main__":
     redhawk_sink("", "")

@@ -23,19 +23,27 @@ import numpy
 from gnuradio import gr
 from ProvidesPorts import ProvidesPorts_i
 import time
-from orb_creator import OrbCreator
 
-import warnings
 import uuid
 
 from tag_utils import rh_packet_to_tag
 import type_mapping
 
-class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
+from collections import deque
+
+class DTRecord(object):
+    def __init__(self, data_transfer):
+        self.packet = data_transfer
+        self.buffer_out = data_transfer.dataBuffer[:]
+
+class redhawk_source(gr.sync_block, ProvidesPorts_i):
     """
     docstring for block redhawk_source
     """
-    def __init__(self, naming_context_ior, corba_namespace_name, gr_type):
+    def __init__(self, naming_context_ior, corba_namespace_name, gr_type='short', packet_depth=4):
+        if packet_depth < 1:
+            raise Exception('packet_depth must be greater than or equal to 1')
+
         component_id = str(uuid.uuid4())
         self.exec_params = {
             "COMPONENT_IDENTIFIER": component_id,
@@ -48,8 +56,6 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
             self,
             self.exec_params["COMPONENT_IDENTIFIER"],
             self.exec_params)
-
-        OrbCreator.__init__(self)
 
         self.gr_type = gr_type
         if   gr_type == type_mapping.GR_COMPLEX or gr_type == type_mapping.GR_FLOAT:
@@ -69,30 +75,88 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i, OrbCreator):
             in_sig=None,
             out_sig=[ type_mapping.SUPPORTED_GR_TYPES[gr_type] ])
 
-    def __del__(self):
-        OrbCreator.__del__(self)
+        self.dtRecords = deque([], packet_depth)
+        self.queueFullWarnOnce = True
+        self.tagsSent = 0
+
+    '''
+    Get a data transfer record either from the queue or the port.
+    This will block until a valid data buffer is returned if the queue is
+    empty.
+    '''
+    def getDTRecord(self):
+        first = False
+
+        # Check for empty buffer, if so remove it. Next returned packet is
+        # definitively the first of the number of times it has been returned.
+        if 0 < len(self.dtRecords) and 0 == len(self.dtRecords[0].buffer_out):
+            self._log.debug('Source: Current packet has been sent; continuing to next')
+            first = True
+            self.dtRecords.popleft()
+
+        # Attempt to get a new packet off the port if there is room in the queue.
+        if len(self.dtRecords) < self.dtRecords.maxlen:
+            self.queueFullWarnOnce = True
+
+            packet = self.__active_port.getPacket()
+            if packet.dataBuffer is not None:
+                self._log.debug('Source: New packet received from REDHAWK')
+                self.dtRecords.append(DTRecord(packet))
+                if 1 == len(self.dtRecords):
+                    first = True
+
+        elif self.queueFullWarnOnce:
+            self._log.warning('Source: Packet queue full.')
+            self.queueFullWarnOnce = False
+
+        record = None
+        if 0 < len(self.dtRecords):
+            record = self.dtRecords[0]
+        return (record, first)
 
     def work(self, input_items, output_items):
-        # Get packet from CORBA port
-        packet = self.__active_port.getPacket()
+        # Flow:
+        #    Get the current or next DTRecord.
+        #    If first, check SRI, create and tag the stream.
+        #    If not first, I'm sure it's grand.
+        #    Move items l2r from the dataBuffer into the output buffer.
+        #    Return number of items processed
+        dtRecord = None
+        first = False
+        pauseCount = 4
+        while True:
+            (dtRecord, first) = self.getDTRecord()
+            if dtRecord:
+                break;
+            else:
+                time.sleep(1.0/pauseCount)
+                pauseCount -= 1
+                if 0 >= pauseCount:
+                    return 0; # Abort.  This is to give work() a chance to exit.
 
-        if packet.dataBuffer is None:
-            return 0
+        if first:
+            # Sanity check SRI vs. data type and warn user JIC.
+            if self.gr_type == type_mapping.GR_COMPLEX and dtRecord.packet.SRI.mode == 0:
+                self._log.warning('Source: Port type was specified as complex, but SRI indicates real data')
 
-        # Convert packet members to stream tag
-        # Copy the buffer
-        # Attach the tag to the stream
-        packetTag = rh_packet_to_tag(packet)
-        numItems = len(packet.dataBuffer)
+            # If the packet's SRI changed:
+            # Convert packet members to stream tag and add it to the stream
+            if dtRecord.packet.sriChanged:
+                self.tagsSent += 1
+                self._log.debug('Source: Adding packet data as stream tag (total: {0})'.format(self.tagsSent))
+                packetTag = rh_packet_to_tag(dtRecord.packet, 0)
+                self.add_item_tag(0, packetTag)
 
-        # Account for complex floats
-        if self.gr_type == type_mapping.GR_COMPLEX and packet.SRI.mode == 0:
-            warnings.warn('Port type was specified as complex, but SRI indicates real data')
+        # Determine number of items that can be moved, move them.
+        noutput_items = len(output_items[0])
+        db_len = len(dtRecord.buffer_out)
+        num_to_send = min([db_len, noutput_items])
+        output_items[0][0:num_to_send] = dtRecord.buffer_out[0:num_to_send]
+        dtRecord.buffer_out = dtRecord.buffer_out[num_to_send+1:]
 
-        output_items[0][0:numItems] = packet.dataBuffer[:]
-        self.add_item_tag(0, packetTag)
+        self._log.debug('Source: Number of elements sent: {0}'.format(num_to_send))
 
-        return numItems
+        return num_to_send
 
 
 if __name__ == "__main__":
