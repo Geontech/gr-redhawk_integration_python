@@ -151,8 +151,6 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
 
                 # Reset remaining length to current (stream tag's indicated) length.
                 self.currentBuffer = numpy.array([])
-                if self.remainingLength > 0:
-                    self._log.warning('Sink: Resetting expected buffer length before previous buffer was filled ({0} remaining)'.format(self.remainingLength))
                 self.remainingLength = self.currentLength
 
         # Return the number of elements processed.
