@@ -3,9 +3,10 @@ brief: Short description of gr-redhawk_integration_python
 tags: # Tags are arbitrary, but look at CGRAN what other authors are using
   - sdr
 author:
-  - Author Name <authors@email.address>
+  - Andrew Cormier <acormier@geontech.com>
+  - Thomas Goodwin <btgoodwin@geontech.com>
 copyright_owner:
-  - Copyright Owner 1
+  - Copyright Geon Technologies, LLC
 license:
 #repo: # Put the URL of the repository here, or leave blank for default
 #website: <module_website> # If you have a separate project website, put it here
