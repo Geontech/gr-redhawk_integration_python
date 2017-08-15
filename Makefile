@@ -20,15 +20,20 @@
 .PHONY: all install uninstall
 
 BUILD_DIR := build
+BUILD_CMAKE := $(BUILD_DIR)/CMakeCache.txt
 
-all:
+SHELL := /bin/bash
+
+all: $(BUILD_CMAKE)
 	@[ -f `which cmake` ] || { echo "Install cmake first"; exit 1; }
 	@[ -f `which grcc` ] || { echo "Install GNURadio first"; exit 1; }
-	@[ -d $(BUILD_DIR) ] || mkdir $(BUILD_DIR)
-	@pushd $(BUILD_DIR); cmake -Wno-dev ..; make; popd
+	$(MAKE) -C $(BUILD_DIR)
 
-install: all
-	@pushd $(BUILD_DIR); make install; popd
+install uninstall: all
+	$(MAKE) -C $(BUILD_DIR) $@
 
-uninstall: all
-	@pushd $(BUILD_DIR); make uninstall; popd
+$(BUILD_DIR):
+	@[ -d $@ ] || mkdir $@
+
+$(BUILD_CMAKE): $(BUILD_DIR)
+	@pushd $(BUILD_DIR); cmake -Wno-dev ..; popd;
