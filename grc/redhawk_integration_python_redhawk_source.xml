@@ -13,14 +13,14 @@
   <param>
     <name>IOR to Connect To</name>
     <key>naming_context_ior</key>
-    <value></value>
+    <value>naming_context_ior</value>
     <type>string</type>
     <hide>all</hide>
   </param>
   <param>
     <name>CORBA Namespace Name</name>
     <key>corba_namespace_name</key>
-    <value></value>
+    <value>corba_namespace_name</value>
     <type>string</type>
     <hide>all</hide>
   </param>
