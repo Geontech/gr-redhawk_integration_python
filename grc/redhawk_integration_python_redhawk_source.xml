@@ -11,21 +11,6 @@
        * key (makes the value accessible as $keyname, e.g. in the make node)
        * type -->
   <param>
-    <name>IOR to Connect To</name>
-    <key>naming_context_ior</key>
-    <value></value>
-    <type>string</type>
-    <hide>all</hide>
-  </param>
-  <param>
-    <name>CORBA Namespace Name</name>
-    <key>corba_namespace_name</key>
-    <value></value>
-    <type>string</type>
-    <hide>all</hide>
-  </param>
-
-  <param>
     <name>Output Type</name>
     <key>type</key>
     <type>enum</type>
