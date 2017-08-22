@@ -4,27 +4,12 @@
   <key>redhawk_integration_redhawk_sink</key>
   <category>redhawk_integration</category>
   <import>import redhawk_integration_python</import>
-  <make>redhawk_integration_python.redhawk_sink($naming_context_ior, $corba_namespace_name, "$type")</make>
+  <make>redhawk_integration_python.redhawk_sink(naming_context_ior, corba_namespace_name, "$type")</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
        * key (makes the value accessible as $keyname, e.g. in the make node)
        * type -->
-  <param>
-    <name>IOR to Connect To</name>
-    <key>naming_context_ior</key>
-    <value></value>
-    <type>string</type>
-    <hide>all</hide>
-  </param>
-  <param>
-    <name>CORBA Namespace Name</name>
-    <key>corba_namespace_name</key>
-    <value></value>
-    <type>string</type>
-    <hide>all</hide>
-  </param>
-
   <param>
     <name>Input Type</name>
     <key>type</key>
