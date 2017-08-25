@@ -28,15 +28,13 @@ RH_PACKET_KEY_SRI       = 'sri'
 RH_PACKET_KEY_CHANGED   = 'changed'
 RH_PACKET_KEY_T         = 'T'
 RH_PACKET_KEY_EOS       = 'EOS'
-RH_PACKET_KEY_LENGTH    = 'length'
 
 def rh_packet_to_tag(packet, tag_index=0):
     rh_dict = dict({ 
         RH_PACKET_KEY_SRI:      packet.SRI.__dict__, 
         RH_PACKET_KEY_CHANGED:  packet.sriChanged, 
         RH_PACKET_KEY_T:        packet.T.__dict__, 
-        RH_PACKET_KEY_EOS:      packet.EOS,
-        RH_PACKET_KEY_LENGTH:   len(packet.dataBuffer)
+        RH_PACKET_KEY_EOS:      packet.EOS
         })
     rh_pmt = gr.pmt.to_pmt(rh_dict)
     tag = gr.python_to_tag((
@@ -47,13 +45,14 @@ def rh_packet_to_tag(packet, tag_index=0):
         ))
     return tag
 
+# Converts from a stream tag to a REDHAWK Packet fields
+# Note: We omit the timestamp, T, since for some reason tags do not
+#       reliably get delivered, and therefore we re-stamp at the sink.
 def tag_to_rh_packet(tag):
     # Defaults
     changed = False
-    T = bulkio.timestamp.now()
     EOS = False
     SRI = bulkio.sri.create()
-    length = 0
     
     # Convert
     tag_p = gr.tag_to_python(tag)
@@ -62,11 +61,9 @@ def tag_to_rh_packet(tag):
         packet          = tag_dict.pop('value')
         SRI.__dict__    = packet.get(RH_PACKET_KEY_SRI, SRI.__dict__)
         changed         = packet.get(RH_PACKET_KEY_CHANGED, changed)
-        T.__dict__      = packet.get(RH_PACKET_KEY_T, T.__dict__)
         EOS             = packet.get(RH_PACKET_KEY_EOS, EOS)
-        length          = packet.get(RH_PACKET_KEY_LENGTH, length)
             
-    return (SRI, changed, T, EOS, length)
+    return (SRI, changed, EOS)
 
 
 if __name__ == "__main__":
