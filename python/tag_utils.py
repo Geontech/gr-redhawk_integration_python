@@ -60,11 +60,11 @@ def tag_to_rh_packet(tag):
     tag_dict = tag_p.__dict__
     if tag_dict['key'] == RH_PACKET_TAG_KEY:
         packet          = tag_dict.pop('value')
-        SRI.__dict__    = packet.pop(RH_PACKET_KEY_SRI)
-        changed         = packet.pop(RH_PACKET_KEY_CHANGED)
-        T.__dict__      = packet.pop(RH_PACKET_KEY_T)
-        EOS             = packet.pop(RH_PACKET_KEY_EOS)
-        length          = packet.pop(RH_PACKET_KEY_LENGTH)
+        SRI.__dict__    = packet.get(RH_PACKET_KEY_SRI, SRI.__dict__)
+        changed         = packet.get(RH_PACKET_KEY_CHANGED, changed)
+        T.__dict__      = packet.get(RH_PACKET_KEY_T, T.__dict__)
+        EOS             = packet.get(RH_PACKET_KEY_EOS, EOS)
+        length          = packet.get(RH_PACKET_KEY_LENGTH, length)
             
     return (SRI, changed, T, EOS, length)
 
