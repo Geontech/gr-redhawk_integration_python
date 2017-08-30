@@ -24,6 +24,7 @@ from gnuradio import gr
 from UsesPorts import UsesPorts_i
 
 import uuid, bulkio
+from ossie.utils.bulkio import bulkio_helpers
 
 from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY
 import type_mapping
@@ -68,8 +69,10 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         self.firstSriPushed = False
 
     def resetCurrentSRI(self):
-        self.currentSRI = None
-        self.currentChanged = False
+        self.currentSRI = bulkio.sri.create()
+        if self.gr_type == type_mapping.GR_COMPLEX:
+            self.currentSRI.mode = 1
+        self.currentChanged = True
         self.currentEOS = False
 
     def work(self, input_items, output_items):
@@ -91,8 +94,10 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
                 self.currentEOS   ) = tag_to_rh_packet(tags[-1])
 
             # Verify if 'complex' port 0 was used that SRI mode is set 1
-            if self.gr_type == type_mapping.GR_COMPLEX and this.currentSRI.mode == 0:
+            # NOTE: We're going to trust the flow graph operator here and flag it.
+            if self.gr_type == type_mapping.GR_COMPLEX and self.currentSRI.mode == 0:
                 self._log.warning('Sink: Port type was specified as complex, but SRI indicates real data')
+                self.currentSRI.mode = 1
 
         # SRI Changed? Push.
         if self.currentChanged or not self.firstSriPushed:
@@ -100,12 +105,19 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
             self.__active_port.pushSRI(self.currentSRI)
             self.firstSriPushed = True
         
-        # Push packet
-        self.__active_port.pushPacket(
-            input_buffer.tolist(),
-            bulkio.timestamp.now(),
-            self.currentEOS,
-            self.currentSRI.streamID)
+        # Push packet.  If complex, convert it to a float32 array.
+        if self.currentSRI.mode == 1:        
+            self.__active_port.pushPacket(
+                bulkio_helpers.pythonComplexListToBulkioComplex(input_buffer),
+                bulkio.timestamp.now(),
+                self.currentEOS,
+                self.currentSRI.streamID)
+        else:
+            self.__active_port.pushPacket(
+                input_buffer.tolist(),
+                bulkio.timestamp.now(),
+                self.currentEOS,
+                self.currentSRI.streamID)
 
         # Return the number of elements processed.
         self._log.debug("Sink: Grand total processed {0}".format(ninput_items))

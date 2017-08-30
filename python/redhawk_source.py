@@ -29,12 +29,23 @@ import uuid
 from tag_utils import rh_packet_to_tag
 import type_mapping
 
+from ossie.utils.bulkio import bulkio_helpers
+
 from collections import deque
 
 class DTRecord(object):
-    def __init__(self, data_transfer):
+    def __init__(self, data_transfer, gr_type):
         self.packet = data_transfer
-        self.buffer_out = data_transfer.dataBuffer[:]
+        np_type = type_mapping.SUPPORTED_GR_TYPES[gr_type]
+
+        # NOTE: We're trusting REDHAWK here.  If there is a mismatch between
+        # the SRI and the port selected on this source, there will be trouble.
+        if self.packet.SRI.mode == 1:
+            self.buffer_out = numpy.array(
+                bulkio_helpers.bulkioComplexToPythonComplexList(data_transfer.dataBuffer),
+                dtype=np_type)
+        else:
+            self.buffer_out = numpy.array(data_transfer.dataBuffer, dtype=np_type)
 
 class redhawk_source(gr.sync_block, ProvidesPorts_i):
     """
@@ -101,7 +112,7 @@ class redhawk_source(gr.sync_block, ProvidesPorts_i):
             packet = self.__active_port.getPacket()
             if packet.dataBuffer is not None:
                 self._log.debug('Source: New packet received from REDHAWK')
-                self.dtRecords.append(DTRecord(packet))
+                self.dtRecords.append(DTRecord(packet, self.gr_type))
                 if 1 == len(self.dtRecords):
                     first = True
 
