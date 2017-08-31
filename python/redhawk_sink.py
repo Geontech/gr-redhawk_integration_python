@@ -83,7 +83,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
 
         # Look for rh_packet stream tag
         self._log.debug("Sink: Searching for rh_packet tag")
-        tags = self.get_tags_in_range(0, 0, total_ninput,
+        tags = self.get_tags_in_range(0, 0, ninput_items,
             gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
 
         if 0 < len(tags):
