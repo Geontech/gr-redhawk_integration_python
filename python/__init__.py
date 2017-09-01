@@ -31,6 +31,6 @@ except ImportError:
 	pass
 
 # import any pure python here
-from redhawk_sink import redhawk_sink
+from redhawk_sink import redhawk_sink, createSRI
 from redhawk_source import redhawk_source
 #
