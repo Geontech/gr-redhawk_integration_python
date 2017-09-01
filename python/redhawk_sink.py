@@ -96,11 +96,12 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         if tag is not None:
             # TODO: So if we do get an SRI over the tag stream, does it 
             # overwrite our internal state or what exactly?  
-            # Guessing just keywords and eos behavior really matter to us
+            # Guessing just keywords, stream ID, and eos behavior matter to us
             # since the flow graph may or may not be creating this tag.
             (sri, changed, eos) = tag_to_rh_packet(tag)
             changed = changed or bulkio.sri.compare(self.currentSRI, sri)
             self.externalSRI.keywords = sri.keywords[:]
+            self.externalSRI.streamID = sri.streamID
 
         if not bulkio.sri.compare(self.externalSRI, self.currentSRI):
             # External and internal are different, favor external
@@ -130,7 +131,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
             rh_tag = tags[-1]
 
         # SRI Changed? Push.
-        if self.self.updateCurrent(rh_tag):
+        if self.updateCurrent(rh_tag):
             self._log.debug("Sink: Pushing SRI (indicated changed)")
             self.__active_port.pushSRI(self.currentSRI)
         
