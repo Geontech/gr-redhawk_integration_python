@@ -24,15 +24,35 @@ from gnuradio import gr
 from UsesPorts import UsesPorts_i
 
 import uuid, bulkio
+from ossie.utils.bulkio import bulkio_helpers
 
 from tag_utils import tag_to_rh_packet, RH_PACKET_TAG_KEY
 import type_mapping
 
+def createSRI(streamID, xunits, xdelta, yunits, ydelta, subsize):
+    sri = bulkio.sri.create(streamID)
+    sri.xunits = xunits
+    sri.xdelta = xdelta
+    sri.yunits = yunits
+    sri.ydelta = ydelta
+    sri.subsize = subsize
+    return sri
+
 class redhawk_sink(gr.sync_block, UsesPorts_i):
     """
-    docstring for block redhawk_sink
+    GNURadio stream to REDHAWK (CORBA) BULKIO interface.
+    
+    Set the SRI parameters for the signal being sent to REDHAWK:
+        streamID - Uniquely identify the stream
+                 - Note: This will be replaced if the REHDAWK tag is found
+                 -       at some point in the stream.
+        xunits   - Type of data vs. X-axis
+        yunits   - Type of data vs. Y-axis
+        xdelta   - Spacing between data on the X-axis
+        ydelta   - Spacing between data on the Y-axis
+        subsize  - 0 if 1-dimensional, > 0 if matrix, etc.
     """
-    def __init__(self, naming_context_ior, corba_namespace_name, gr_type):
+    def __init__(self, naming_context_ior, corba_namespace_name, gr_type, sri):
         component_id = str(uuid.uuid4())
         self.exec_params = {
             "COMPONENT_IDENTIFIER": component_id,
@@ -64,13 +84,33 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
             in_sig=[ type_mapping.SUPPORTED_GR_TYPES[gr_type] ],
             out_sig=None)
 
-        self.resetCurrentSRI()
-        self.firstSriPushed = False
-
-    def resetCurrentSRI(self):
-        self.currentSRI = None
-        self.currentChanged = False
+        self.tagsReceived = 0
+        self.externalSRI = sri
+        self.currentSRI = bulkio.sri.create()
         self.currentEOS = False
+
+    def updateCurrent(self, tag=None):
+        changed = False
+        eos = False
+
+        if tag is not None:
+            # TODO: So if we do get an SRI over the tag stream, does it 
+            # overwrite our internal state or what exactly?  
+            # Guessing just keywords, stream ID, and eos behavior matter to us
+            # since the flow graph may or may not be creating this tag.
+            (sri, changed, eos) = tag_to_rh_packet(tag)
+            changed = changed or bulkio.sri.compare(self.currentSRI, sri)
+            self.externalSRI.keywords = sri.keywords[:]
+            self.externalSRI.streamID = sri.streamID
+
+        if not bulkio.sri.compare(self.externalSRI, self.currentSRI):
+            # External and internal are different, favor external
+            changed = True
+            self.currentSRI = self.externalSRI
+
+        # Forward eos, return changed
+        self.currentEOS = eos
+        return changed
 
     def work(self, input_items, output_items):
         input_buffer = input_items[0][:]
@@ -80,26 +120,25 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
 
         # Look for rh_packet stream tag
         self._log.debug("Sink: Searching for rh_packet tag")
-        tags = self.get_tags_in_range(0, 0, total_ninput,
+        tags = self.get_tags_in_range(0, 0, ninput_items,
             gr.pmt.string_to_symbol(RH_PACKET_TAG_KEY))
 
+        rh_tag = None
         if 0 < len(tags):
             # Grab the last SRI tag in the buffer and push it.
+            self.tagsReceived += len(tags)
             self._log.debug("Sink: Found rh_packet Tag (num: {0}, total received: {1}).".format(len(tags), self.tagsReceived))
-            (   self.currentSRI,
-                self.currentChanged,
-                self.currentEOS   ) = tag_to_rh_packet(tags[-1])
-
-            # Verify if 'complex' port 0 was used that SRI mode is set 1
-            if self.gr_type == type_mapping.GR_COMPLEX and this.currentSRI.mode == 0:
-                self._log.warning('Sink: Port type was specified as complex, but SRI indicates real data')
+            rh_tag = tags[-1]
 
         # SRI Changed? Push.
-        if self.currentChanged or not self.firstSriPushed:
+        if self.updateCurrent(rh_tag):
             self._log.debug("Sink: Pushing SRI (indicated changed)")
             self.__active_port.pushSRI(self.currentSRI)
-            self.firstSriPushed = True
         
+        # If complex, convert buffer format
+        if self.currentSRI.mode == 1:
+            input_buffer = bulkio_helpers.pythonComplexListToBulkioComplex(input_buffer)
+
         # Push packet
         self.__active_port.pushPacket(
             input_buffer.tolist(),

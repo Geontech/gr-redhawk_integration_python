@@ -21,6 +21,7 @@
 
 from gnuradio import gr
 import bulkio
+from ossie.properties import props_from_dict, props_to_dict
 
 RH_PACKET_TAG_KEY       = 'rh_packet'
 
@@ -29,9 +30,19 @@ RH_PACKET_KEY_CHANGED   = 'changed'
 RH_PACKET_KEY_T         = 'T'
 RH_PACKET_KEY_EOS       = 'EOS'
 
+def sri_to_dict(sri):
+    sri.keywords = props_to_dict(sri.keywords)
+    return sri.__dict__
+
+def sri_from_dict(sridict):
+    sri = bulkio.sri.create()
+    sri.__dict__ = sridict
+    sri.keywords = props_from_dict(sri.keywords)
+    return sri
+
 def rh_packet_to_tag(packet, tag_index=0):
     rh_dict = dict({ 
-        RH_PACKET_KEY_SRI:      packet.SRI.__dict__, 
+        RH_PACKET_KEY_SRI:      sri_to_dict(packet.SRI), 
         RH_PACKET_KEY_CHANGED:  packet.sriChanged, 
         RH_PACKET_KEY_T:        packet.T.__dict__, 
         RH_PACKET_KEY_EOS:      packet.EOS
@@ -59,7 +70,7 @@ def tag_to_rh_packet(tag):
     tag_dict = tag_p.__dict__
     if tag_dict['key'] == RH_PACKET_TAG_KEY:
         packet          = tag_dict.pop('value')
-        SRI.__dict__    = packet.get(RH_PACKET_KEY_SRI, SRI.__dict__)
+        SRI             = sri_from_dict(packet.get(RH_PACKET_KEY_SRI, SRI.__dict__))
         changed         = packet.get(RH_PACKET_KEY_CHANGED, changed)
         EOS             = packet.get(RH_PACKET_KEY_EOS, EOS)
             

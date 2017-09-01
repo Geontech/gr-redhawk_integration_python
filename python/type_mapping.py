@@ -28,7 +28,7 @@ GR_SHORT   = 'short'
 GR_BYTE    = 'byte'
 
 SUPPORTED_GR_TYPES = {
-    GR_COMPLEX: numpy.complex,
+    GR_COMPLEX: numpy.complex64,
     GR_FLOAT:   numpy.float32,
     GR_INT:     numpy.int32,
     GR_SHORT:   numpy.short,
