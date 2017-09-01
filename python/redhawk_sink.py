@@ -40,7 +40,17 @@ def createSRI(streamID, xunits, xdelta, yunits, ydelta, subsize):
 
 class redhawk_sink(gr.sync_block, UsesPorts_i):
     """
-    docstring for block redhawk_sink
+    GNURadio stream to REDHAWK (CORBA) BULKIO interface.
+    
+    Set the SRI parameters for the signal being sent to REDHAWK:
+        streamID - Uniquely identify the stream
+                 - Note: This will be replaced if the REHDAWK tag is found
+                 -       at some point in the stream.
+        xunits   - Type of data vs. X-axis
+        yunits   - Type of data vs. Y-axis
+        xdelta   - Spacing between data on the X-axis
+        ydelta   - Spacing between data on the Y-axis
+        subsize  - 0 if 1-dimensional, > 0 if matrix, etc.
     """
     def __init__(self, naming_context_ior, corba_namespace_name, gr_type, sri):
         component_id = str(uuid.uuid4())

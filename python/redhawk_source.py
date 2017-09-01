@@ -49,7 +49,15 @@ class DTRecord(object):
 
 class redhawk_source(gr.sync_block, ProvidesPorts_i):
     """
-    docstring for block redhawk_source
+    REDHAWK (CORBA) BULKIO interface to GNURadio stream
+    
+    The packet depth controls how many bulkio packets are queued if downstream
+    blocks are not keeping up or are occasionally bottlenecking.
+
+    This block also conveys the SRI (Signal Related Information, see REDHAWK 
+    ICD 2.0 section 3.1.1.2.5 for format), time stamp, and other flags as a 
+    stream tag.  See rh_packet_to_tag, tag_to_rh_packet for help converting
+    between the fields and a PMT.
     """
     def __init__(self, naming_context_ior, corba_namespace_name, gr_type='short', packet_depth=4):
         if packet_depth < 1:

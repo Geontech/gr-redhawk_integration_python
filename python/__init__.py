@@ -33,4 +33,5 @@ except ImportError:
 # import any pure python here
 from redhawk_sink import redhawk_sink, createSRI
 from redhawk_source import redhawk_source
+from tag_utils import rh_packet_to_tag, tag_to_rh_packet
 #

@@ -125,7 +125,7 @@
   </param>
 
   <param>
-    <name>X Delta (between samples)</name>
+    <name>X Delta</name>
     <key>sri_xdelta</key>
     <value>1/samp_rate</value>
     <type>float</type>
@@ -196,14 +196,14 @@
   </param>
 
   <param>
-    <name>Y Delta (between samples)</name>
+    <name>Y Delta</name>
     <key>sri_ydelta</key>
     <value>1</value>
     <type>float</type>
   </param>
 
   <param>
-    <name>Subsize (0 if one dimensional, > 0 to describe scale for second dimension)</name>
+    <name>Subsize</name>
     <key>sri_subsize</key>
     <value>0</value>
     <type>int</type>
