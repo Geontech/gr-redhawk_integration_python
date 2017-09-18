@@ -2,7 +2,33 @@
 
  > **Important:** This project is a part of [gnuradio-redhawk][1] that provides the remaining pieces necessary for integration with REDHAWK.
 
-The REDHAWK Integration Python Package provides a `redhawk_source` block and a `redhawk_sink` block for data ingress and egress from the Flow Graph, respectively.  Each is intended to replace any data streaming elements that may have been required in the Flow Graph that will be sourced (or sinked) from (or to) a Device in the REDHAWK Domain.  The blocks themselves are CORBA endpoints that are (ultimately) mapped to Ports on a REDHAWK Component using the [gr-component_converter][2].
+The REDHAWK Integration Python Package is an OOT module that provides a `redhawk_source` block and a `redhawk_sink` block for data ingress and egress from the Flow Graph, respectively.  Each is intended to replace any data streaming elements that may have been required in the Flow Graph that will be sourced (or sinked) from (or to) a Device in the REDHAWK Domain.  The blocks themselves are CORBA endpoints that are (ultimately) mapped to Ports on a REDHAWK Component using the [gr-component_converter][2].
+
+## Requirements
+
+The supported (i.e., tested) framework versions at this time are:
+
+ 1. REDHAWK SDR 2.0.6
+ 2. GNURadio 3.7.9
+
+## Installation
+
+To install the OOT module, run the `install` make target.
+
+**Source or Package Manager Installations**
+
+```
+sudo make install
+```
+
+**Pybombs Installations**
+
+```
+source <your prefix>/setup_env.sh
+make install
+```
+
+ > **Note:** Pybombs users do not need to be root to install the integration package since it's likely owned by one's own user.
 
 ## Source
 
