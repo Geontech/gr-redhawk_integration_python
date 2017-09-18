@@ -11,6 +11,8 @@ The supported (i.e., tested) framework versions at this time are:
  1. REDHAWK SDR 2.0.6
  2. GNURadio 3.7.9
 
+ > Note: GNURadio 3.7.11 appears to function properly, however it has not been tested extensively with these blocks.
+
 ## Installation
 
 To install the OOT module, run the `install` make target.
