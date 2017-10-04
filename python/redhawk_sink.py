@@ -139,6 +139,8 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         # If complex, convert buffer format
         if self.currentSRI.mode == 1:
             input_buffer = bulkio_helpers.pythonComplexListToBulkioComplex(input_buffer)
+            # Because of a bug in 2.0.6, the above function does not apply the 'float' item type.
+            input_buffer = [float(b) for b in input_buffer]
         else:
             input_buffer = input_buffer.tolist()
 
