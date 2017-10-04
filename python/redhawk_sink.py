@@ -86,6 +86,7 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
 
         self.tagsReceived = 0
         self.externalSRI = sri
+        self.externalSRI.mode = 1 if gr_type == type_mapping.GR_COMPLEX else 0
         self.currentSRI = bulkio.sri.create()
         self.currentEOS = False
 
@@ -138,10 +139,14 @@ class redhawk_sink(gr.sync_block, UsesPorts_i):
         # If complex, convert buffer format
         if self.currentSRI.mode == 1:
             input_buffer = bulkio_helpers.pythonComplexListToBulkioComplex(input_buffer)
+            # Because of a bug in 2.0.6, the above function does not apply the 'float' item type.
+            input_buffer = [float(b) for b in input_buffer]
+        else:
+            input_buffer = input_buffer.tolist()
 
         # Push packet
         self.__active_port.pushPacket(
-            input_buffer.tolist(),
+            input_buffer,
             bulkio.timestamp.now(),
             self.currentEOS,
             self.currentSRI.streamID)
