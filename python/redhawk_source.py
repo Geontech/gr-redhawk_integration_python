@@ -44,6 +44,8 @@ class DTRecord(object):
             self.buffer_out = numpy.array(
                 bulkio_helpers.bulkioComplexToPythonComplexList(data_transfer.dataBuffer),
                 dtype=np_type)
+        elif np_type == numpy.int8:
+            self.buffer_out = numpy.fromstring(data_transfer.dataBuffer, dtype=np_type)
         else:
             self.buffer_out = numpy.array(data_transfer.dataBuffer, dtype=np_type)
 
